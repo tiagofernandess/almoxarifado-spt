@@ -359,7 +359,7 @@ export const generateLabelsPDF = (startNumber: number, endNumber: number, custom
     // Texto personalizado
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(customPhrase, x + labelWidth / 2, y + labelHeight / 2 + 6, { align: "center" });
+    doc.text(customPhrase, x + labelWidth / 2, y + labelHeight / 2 + 3, { align: "center" });
     
     // Incrementar contador de etiquetas
     labelCount++;

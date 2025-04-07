@@ -103,7 +103,7 @@ export default function Labels() {
                     className="w-28 h-16 flex flex-col justify-center items-center p-2 text-center bg-white"
                   >
                     <span className="text-lg font-bold">{formatNumber(startNumber + i)}</span>
-                    <span className="text-xs truncate w-full">{customPhrase}</span>
+                    <span className="text-xs mt-[-2px] truncate w-full">{customPhrase}</span>
                   </div>
                 ))}
                 {endNumber - startNumber + 1 > 4 && (
