@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -44,7 +43,6 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { generateInventoryPDF } from "@/lib/pdf-generator";
-import { generateInventoryExcel } from "@/lib/excel-generator";
 
 const itemCategories: ItemCategory[] = [
   "Máquinas VX",
@@ -52,6 +50,7 @@ const itemCategories: ItemCategory[] = [
   "Notebook/PC",
   "Suprimentos",
   "Material de Escritório",
+  "BANCADAS",
 ];
 
 interface ItemFormData {
@@ -146,10 +145,6 @@ export default function Items() {
   
   const handleExportPDF = () => {
     generateInventoryPDF(items);
-  };
-  
-  const handleExportExcel = () => {
-    generateInventoryExcel(items);
   };
   
   return (
@@ -303,14 +298,7 @@ export default function Items() {
             </Dialog>
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="flex gap-2 items-center"
-              onClick={handleExportExcel}
-            >
-              <Download className="h-4 w-4" /> Excel
-            </Button>
+          <div>
             <Button
               variant="outline"
               className="flex gap-2 items-center"

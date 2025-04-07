@@ -1,5 +1,4 @@
-
-export type ItemCategory = 'Máquinas VX' | 'Máquinas Digital' | 'Notebook/PC' | 'Suprimentos' | 'Material de Escritório';
+export type ItemCategory = 'Máquinas VX' | 'Máquinas Digital' | 'Notebook/PC' | 'Suprimentos' | 'Material de Escritório' | 'BANCADAS';
 
 export interface Item {
   id: string;
@@ -49,4 +48,9 @@ export interface LabelTemplate {
   startNumber: number;
   endNumber: number;
   customPhrase: string;
+}
+
+export interface User {
+  username: string;
+  password: string;
 }

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +13,19 @@ import {
   FileText,
   Tag,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export function AppSidebar() {
   const [expanded, setExpanded] = useState(true);
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className={cn(
@@ -35,7 +44,7 @@ export function AppSidebar() {
       
       <div className="overflow-y-auto flex-1 py-4">
         <nav className="px-2 space-y-1">
-          <NavItem to="/" icon={<LayoutDashboard size={20} />} label="Dashboard" expanded={expanded} />
+          <NavItem to="/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" expanded={expanded} />
           <NavItem to="/items" icon={<Package size={20} />} label="Itens" expanded={expanded} />
           <NavItem to="/sellers" icon={<Users size={20} />} label="Vendedores" expanded={expanded} />
           <NavItem to="/checkout" icon={<ArrowRightFromLine size={20} />} label="Saída" expanded={expanded} />
@@ -45,15 +54,31 @@ export function AppSidebar() {
         </nav>
       </div>
       
-      <div className="border-t p-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full flex justify-center"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? <ChevronRight /> : <ChevronRight className="rotate-180" />}
-        </Button>
+      <div className="border-t p-2 space-y-2">
+        {expanded && (
+          <div className="px-2 py-1 text-sm text-gray-600">
+            Usuário: {user}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className={expanded ? "w-full flex justify-between items-center" : "w-full flex justify-center"}
+            onClick={handleLogout}
+          >
+            <LogOut size={16} />
+            {expanded && <span>Sair</span>}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex justify-center"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? <ChevronRight /> : <ChevronRight className="rotate-180" />}
+          </Button>
+        </div>
       </div>
     </div>
   );

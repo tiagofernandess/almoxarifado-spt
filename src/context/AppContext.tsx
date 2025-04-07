@@ -1,4 +1,3 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { Item, ItemMovement, Seller, DashboardStats, ItemCategory } from "@/types";
 import storage from "@/lib/storage";
@@ -43,18 +42,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       "Máquinas Digital": 0,
       "Notebook/PC": 0,
       "Suprimentos": 0,
-      "Material de Escritório": 0
+      "Material de Escritório": 0,
+      "BANCADAS": 0
     }
   });
   
-  // Load data from localStorage on component mount
   useEffect(() => {
     setItems(storage.getItems());
     setSellers(storage.getSellers());
     setMovements(storage.getMovements());
   }, []);
   
-  // Calculate dashboard stats whenever items, sellers or movements change
   useEffect(() => {
     const checkouts = movements.filter(m => m.type === 'checkout').length;
     const returns = movements.filter(m => m.type === 'return').length;
@@ -64,7 +62,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       "Máquinas Digital": 0,
       "Notebook/PC": 0,
       "Suprimentos": 0,
-      "Material de Escritório": 0
+      "Material de Escritório": 0,
+      "BANCADAS": 0
     };
     
     items.forEach(item => {
@@ -80,7 +79,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [items, sellers, movements]);
   
-  // Save to localStorage whenever data changes
   useEffect(() => {
     storage.setItems(items);
   }, [items]);
@@ -93,7 +91,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     storage.setMovements(movements);
   }, [movements]);
   
-  // Item operations
   const addItem = (newItem: Omit<Item, "id" | "createdAt" | "updatedAt">) => {
     const now = new Date().toISOString();
     const item: Item = {
@@ -126,7 +123,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   
   const deleteItem = (id: string) => {
-    // Check if item is in use
     const itemToDelete = items.find(item => item.id === id);
     if (itemToDelete && itemToDelete.inUseQuantity > 0) {
       toast({
@@ -145,7 +141,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
   
-  // Seller operations
   const addSeller = (newSeller: Omit<Seller, "id" | "createdAt" | "updatedAt">) => {
     const now = new Date().toISOString();
     const seller: Seller = {
@@ -178,7 +173,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   
   const deleteSeller = (id: string) => {
-    // Check if seller is associated with any movement
     const sellerHasMovements = movements.some(movement => movement.sellerId === id);
     
     if (sellerHasMovements) {
@@ -197,7 +191,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
   
-  // Movement operations
   const addCheckout = (checkout: Omit<ItemMovement, "id" | "type" | "date">) => {
     const movement: ItemMovement = {
       ...checkout,
@@ -208,7 +201,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     setMovements(prev => [...prev, movement]);
     
-    // Update item quantities
     checkout.items.forEach(({ itemId, quantity }) => {
       setItems(prev =>
         prev.map(item => {
@@ -241,7 +233,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     setMovements(prev => [...prev, movement]);
     
-    // Update item quantities
     returnItem.items.forEach(({ itemId, quantity }) => {
       setItems(prev =>
         prev.map(item => {
