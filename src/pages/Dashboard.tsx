@@ -6,32 +6,28 @@ import { CategoryTable } from "@/components/Dashboard/CategoryTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Users, ClipboardList, RefreshCw, Download } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useApp } from "@/context/AppContext";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { generateDashboardReportPDF } from "@/lib/pdf-generator";
 import { ItemCategory } from "@/types";
 
 export default function Dashboard() {
   const { items, sellers, movements, stats } = useApp();
   
-  const categoryStats = Object.entries(stats.stockByCategory).map(([category, quantity]) => ({
-    category: category as ItemCategory,
-    quantity: quantity as number,
-  }));
-  
-  // Últimas 5 movimentações
-  const recentMovements = [...movements]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
+  const categoryStats = Object.entries(stats.stockByCategory).map(([category, quantity]) => {
+    // Calcular quantidades por categoria
+    const categoryItems = items.filter(item => item.category === category);
+    const totalInCategory = categoryItems.length;
+    const inUseCount = categoryItems.reduce((acc, item) => acc + item.inUseQuantity, 0);
+    const availableCount = categoryItems.reduce((acc, item) => acc + item.availableQuantity, 0);
+    
+    return {
+      category: category as ItemCategory,
+      quantity: quantity as number,
+      totalItems: totalInCategory,
+      inUseQuantity: inUseCount,
+      availableQuantity: availableCount
+    };
+  });
   
   const handleGenerateReport = () => {
     generateDashboardReportPDF(stats, items, sellers, movements);
@@ -68,77 +64,63 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Status por categoria */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <CategoryTable
-            stats={categoryStats}
-            totalItems={items.reduce((acc, item) => acc + item.availableQuantity, 0)}
-          />
-
-          {/* Últimas movimentações */}
-          <Card className="card-transition">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Últimas Movimentações</CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex gap-2 items-center"
-                onClick={handleGenerateReport}
-              >
-                <Download className="h-4 w-4" /> Gerar Relatório
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Responsável</TableHead>
-                    <TableHead className="text-right">Itens</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentMovements.length > 0 ? (
-                    recentMovements.map((movement) => (
-                      <TableRow key={movement.id}>
-                        <TableCell>
-                          {format(new Date(movement.date), "dd/MM/yy HH:mm", {
-                            locale: ptBR,
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              movement.type === "checkout"
-                                ? "bg-orange-100 text-orange-600"
-                                : "bg-green-100 text-green-600"
-                            }`}
-                          >
-                            {movement.type === "checkout" ? "Saída" : "Devolução"}
-                          </span>
-                        </TableCell>
-                        <TableCell>{movement.responsibleName}</TableCell>
-                        <TableCell className="text-right">
-                          {movement.items.reduce(
-                            (acc, item) => acc + item.quantity,
-                            0
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4">
-                        Nenhuma movimentação registrada
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Status por categoria - Versão Expandida */}
+        <Card className="card-transition">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Status por Categoria</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex gap-2 items-center"
+              onClick={handleGenerateReport}
+            >
+              <Download className="h-4 w-4" /> Gerar Relatório
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4">Categoria</th>
+                    <th className="text-center py-3 px-4">Qtde. Cadastrada</th>
+                    <th className="text-center py-3 px-4">Em Uso</th>
+                    <th className="text-center py-3 px-4">Disponível</th>
+                    <th className="text-center py-3 px-4">% Utilização</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryStats.map((stat) => {
+                    const totalItems = stat.inUseQuantity + stat.availableQuantity;
+                    const utilizationPercentage = totalItems > 0 
+                      ? Math.round((stat.inUseQuantity / totalItems) * 100) 
+                      : 0;
+                    
+                    return (
+                      <tr key={stat.category} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{stat.category}</td>
+                        <td className="text-center py-3 px-4">{stat.totalItems}</td>
+                        <td className="text-center py-3 px-4">{stat.inUseQuantity}</td>
+                        <td className="text-center py-3 px-4">{stat.availableQuantity}</td>
+                        <td className="text-center py-3 px-4">
+                          <div className="flex items-center justify-center">
+                            <div className="w-full max-w-[100px] bg-gray-200 rounded-full h-2.5">
+                              <div 
+                                className="bg-sorte-primary h-2.5 rounded-full" 
+                                style={{ width: `${utilizationPercentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="ml-2 text-xs">{utilizationPercentage}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

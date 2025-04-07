@@ -48,6 +48,7 @@ export default function Reports() {
   const { items, movements, stats } = useApp();
   const [activeTab, setActiveTab] = useState("inventory");
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "all">("all");
+  const [selectedMovementType, setSelectedMovementType] = useState<'checkout' | 'return' | 'all'>("all");
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -62,28 +63,35 @@ export default function Reports() {
   
   const filteredMovements = movements.filter(movement => {
     const movementDate = new Date(movement.date);
+    let matchesType = true;
     
-    // Se não há filtro de data, retorna todos
+    // Filtro por tipo de movimento
+    if (selectedMovementType !== 'all') {
+      matchesType = movement.type === selectedMovementType;
+    }
+    
+    // Se não há filtro de data, retorna com base apenas no tipo
     if (!dateRange.from && !dateRange.to) {
-      return true;
+      return matchesType;
     }
     
     // Se há apenas data inicial
     if (dateRange.from && !dateRange.to) {
-      return movementDate >= dateRange.from;
+      return movementDate >= dateRange.from && matchesType;
     }
     
     // Se há apenas data final
     if (!dateRange.from && dateRange.to) {
-      return movementDate <= dateRange.to;
+      return movementDate <= dateRange.to && matchesType;
     }
     
     // Se há ambas as datas
-    return movementDate >= dateRange.from! && movementDate <= dateRange.to!;
+    return movementDate >= dateRange.from! && movementDate <= dateRange.to! && matchesType;
   });
   
   const resetFilters = () => {
     setSelectedCategory("all");
+    setSelectedMovementType("all");
     setDateRange({ from: undefined, to: undefined });
   };
   
@@ -145,17 +153,36 @@ export default function Reports() {
                     </div>
                     
                     {activeTab === "movements" && (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Período</label>
-                        <div className="flex flex-col gap-2">
-                          <Calendar
-                            mode="range"
-                            selected={dateRange}
-                            onSelect={(range) => setDateRange(range as any)}
-                            className="border rounded-md p-2"
-                          />
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Tipo de Movimentação</label>
+                          <Select
+                            value={selectedMovementType}
+                            onValueChange={(value) => setSelectedMovementType(value as 'checkout' | 'return' | 'all')}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Todos os tipos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos os tipos</SelectItem>
+                              <SelectItem value="checkout">Saída</SelectItem>
+                              <SelectItem value="return">Devolução</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Período</label>
+                          <div className="flex flex-col gap-2">
+                            <Calendar
+                              mode="range"
+                              selected={dateRange}
+                              onSelect={(range) => setDateRange(range as any)}
+                              className="border rounded-md p-2"
+                            />
+                          </div>
+                        </div>
+                      </>
                     )}
                     
                     <Button
@@ -273,6 +300,12 @@ export default function Reports() {
               <CardHeader>
                 <CardTitle>Relatório de Movimentações</CardTitle>
                 <CardDescription>
+                  {selectedMovementType !== "all" && (
+                    <span className="font-medium">
+                      Tipo: {selectedMovementType === "checkout" ? "Saída" : "Devolução"}{" "}
+                      {" | "}
+                    </span>
+                  )}
                   {dateRange.from || dateRange.to
                     ? `Período: ${
                         dateRange.from
@@ -294,7 +327,8 @@ export default function Reports() {
                       <TableHead>Tipo</TableHead>
                       <TableHead>Responsável</TableHead>
                       <TableHead>Vendedor</TableHead>
-                      <TableHead className="text-center">Itens</TableHead>
+                      <TableHead>Códigos de Itens</TableHead>
+                      <TableHead className="text-center">Total Itens</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -319,6 +353,9 @@ export default function Reports() {
                           </TableCell>
                           <TableCell>{movement.responsibleName}</TableCell>
                           <TableCell>{movement.sellerName || "-"}</TableCell>
+                          <TableCell>
+                            {movement.items.map(item => item.itemCode).join(", ")}
+                          </TableCell>
                           <TableCell className="text-center">
                             {movement.items.reduce(
                               (acc, item) => acc + item.quantity,
@@ -329,7 +366,7 @@ export default function Reports() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-6">
+                        <TableCell colSpan={6} className="text-center py-6">
                           Nenhuma movimentação encontrada
                         </TableCell>
                       </TableRow>

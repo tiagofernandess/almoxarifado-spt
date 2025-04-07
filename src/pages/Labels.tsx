@@ -18,14 +18,20 @@ import { generateLabelsPDF } from "@/lib/pdf-generator";
 export default function Labels() {
   const [startNumber, setStartNumber] = useState(1);
   const [endNumber, setEndNumber] = useState(10);
-  const [customPhrase, setCustomPhrase] = useState("Sorte ParaTodos");
+  const [customPhrase, setCustomPhrase] = useState("Pertence à Sorte Para Todos");
+  const [numberFormat, setNumberFormat] = useState(5); // Número de dígitos
+  
+  // Função para formatar o número com zeros à esquerda
+  const formatNumber = (num: number): string => {
+    return `Nº ${num.toString().padStart(numberFormat, '0')}`;
+  };
   
   const handleGenerateLabels = () => {
     if (startNumber > endNumber) {
       return;
     }
     
-    generateLabelsPDF(startNumber, endNumber, customPhrase);
+    generateLabelsPDF(startNumber, endNumber, customPhrase, numberFormat);
   };
   
   return (
@@ -62,18 +68,31 @@ export default function Labels() {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="customPhrase">Frase Personalizada</Label>
-              <Input
-                id="customPhrase"
-                value={customPhrase}
-                onChange={(e) => setCustomPhrase(e.target.value)}
-                placeholder="Ex: Sorte ParaTodos"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="numberFormat">Formato do Número (dígitos)</Label>
+                <Input
+                  id="numberFormat"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={numberFormat}
+                  onChange={(e) => setNumberFormat(parseInt(e.target.value) || 5)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customPhrase">Frase Personalizada</Label>
+                <Input
+                  id="customPhrase"
+                  value={customPhrase}
+                  onChange={(e) => setCustomPhrase(e.target.value)}
+                  placeholder="Pertence à Sorte Para Todos"
+                />
+              </div>
             </div>
             
             {/* Área de Visualização */}
-            <div className="border rounded-lg p-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Eye className="h-4 w-4" /> Pré-visualização
               </h3>
@@ -81,14 +100,14 @@ export default function Labels() {
                 {Array.from({ length: Math.min(4, endNumber - startNumber + 1) }, (_, i) => (
                   <div
                     key={i}
-                    className="border rounded w-28 h-16 flex flex-col justify-center items-center p-2 text-center"
+                    className="w-28 h-16 flex flex-col justify-center items-center p-2 text-center bg-white"
                   >
-                    <span className="text-lg font-bold">{startNumber + i}</span>
+                    <span className="text-lg font-bold">{formatNumber(startNumber + i)}</span>
                     <span className="text-xs truncate w-full">{customPhrase}</span>
                   </div>
                 ))}
                 {endNumber - startNumber + 1 > 4 && (
-                  <div className="border rounded w-28 h-16 flex flex-col justify-center items-center bg-muted text-muted-foreground">
+                  <div className="w-28 h-16 flex flex-col justify-center items-center bg-muted text-muted-foreground">
                     <span className="text-sm">+ {endNumber - startNumber - 3}</span>
                   </div>
                 )}
