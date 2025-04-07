@@ -1,108 +1,87 @@
 
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-  BarChartBig,
-  Box,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardList,
-  Home,
-  LogOut,
   Package,
-  Printer,
+  Users,
+  ArrowRightFromLine,
+  ArrowLeftFromLine,
   RefreshCw,
+  LayoutDashboard,
+  FileText,
   Tag,
-  User,
+  ChevronRight,
 } from "lucide-react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
 
 export function AppSidebar() {
   const [expanded, setExpanded] = useState(true);
-  const location = useLocation();
-
-  const navigation = [
-    { name: "Dashboard", href: "/", icon: Home },
-    { name: "Itens", href: "/items", icon: Package },
-    { name: "Vendedores", href: "/sellers", icon: User },
-    { name: "Saída de Itens", href: "/checkout", icon: ClipboardList },
-    { name: "Devolução", href: "/return", icon: RefreshCw },
-    { name: "Etiquetas", href: "/labels", icon: Tag },
-    { name: "Relatórios", href: "/reports", icon: BarChartBig },
-  ];
 
   return (
-    <Sidebar
-      expanded={expanded}
-      onExpandedChange={setExpanded}
-      className="border-r border-r-sorte-lightGray"
-    >
-      <SidebarHeader className="flex items-center justify-between py-6">
-        <div className="flex items-center gap-2 px-4">
-          {expanded ? (
-            <div className="flex items-center gap-2">
-              <Box className="h-6 w-6 text-white" />
-              <span className="text-xl font-bold text-white">Sorte ParaTodos</span>
-            </div>
-          ) : (
-            <Box className="h-6 w-6 text-white mx-auto" />
-          )}
-        </div>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="p-2 rounded-full hover:bg-sidebar-accent transition-colors"
-        >
-          {expanded ? (
-            <ChevronLeft className="h-5 w-5 text-white" />
-          ) : (
-            <ChevronRight className="h-5 w-5 text-white" />
-          )}
-        </button>
-      </SidebarHeader>
+    <div className={cn(
+      "h-screen bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+      expanded ? "w-64" : "w-20"
+    )}>
+      <div className="flex items-center h-16 px-4 border-b">
+        {expanded ? (
+          <div className="text-xl font-bold text-sorte-primary">
+            Sorte ParaTodos
+          </div>
+        ) : (
+          <div className="text-xl font-bold text-sorte-primary mx-auto">SP</div>
+        )}
+      </div>
       
-      <SidebarContent className="px-3">
-        <nav className="space-y-1">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  expanded ? "justify-start" : "justify-center",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                )
-              }
-            >
-              <item.icon className={cn("h-5 w-5", expanded ? "" : "mx-auto")} />
-              {expanded && <span>{item.name}</span>}
-            </NavLink>
-          ))}
+      <div className="overflow-y-auto flex-1 py-4">
+        <nav className="px-2 space-y-1">
+          <NavItem to="/" icon={<LayoutDashboard size={20} />} label="Dashboard" expanded={expanded} />
+          <NavItem to="/items" icon={<Package size={20} />} label="Itens" expanded={expanded} />
+          <NavItem to="/sellers" icon={<Users size={20} />} label="Vendedores" expanded={expanded} />
+          <NavItem to="/checkout" icon={<ArrowRightFromLine size={20} />} label="Saída" expanded={expanded} />
+          <NavItem to="/return" icon={<RefreshCw size={20} />} label="Devolução" expanded={expanded} />
+          <NavItem to="/labels" icon={<Tag size={20} />} label="Etiquetas" expanded={expanded} />
+          <NavItem to="/reports" icon={<FileText size={20} />} label="Relatórios" expanded={expanded} />
         </nav>
-      </SidebarContent>
+      </div>
       
-      <SidebarFooter className="px-3 py-4">
-        <NavLink
-          to="/logout"
-          className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            expanded ? "justify-start" : "justify-center",
-            "text-sidebar-foreground hover:bg-sidebar-accent/50"
-          )}
+      <div className="border-t p-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full flex justify-center"
+          onClick={() => setExpanded(!expanded)}
         >
-          <LogOut className={cn("h-5 w-5", expanded ? "" : "mx-auto")} />
-          {expanded && <span>Sair</span>}
-        </NavLink>
-      </SidebarFooter>
-    </Sidebar>
+          {expanded ? <ChevronRight /> : <ChevronRight className="rotate-180" />}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface NavItemProps {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  expanded: boolean;
+}
+
+function NavItem({ to, icon, label, expanded }: NavItemProps) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        cn(
+          "flex items-center px-3 py-2 text-sm rounded-md",
+          isActive
+            ? "bg-sorte-primary/10 text-sorte-primary font-medium"
+            : "text-gray-600 hover:bg-gray-100",
+          !expanded && "justify-center"
+        )
+      }
+    >
+      <span className="flex-shrink-0">{icon}</span>
+      {expanded && <span className="ml-3">{label}</span>}
+    </NavLink>
   );
 }
