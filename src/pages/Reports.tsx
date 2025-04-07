@@ -34,7 +34,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, FileSpreadsheet, FileText, Filter } from "lucide-react";
+import { FileText, Filter } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -42,7 +42,6 @@ import {
 } from "@/components/ui/popover";
 import { ItemCategory } from "@/types";
 import { generateInventoryPDF } from "@/lib/pdf-generator";
-import { generateInventoryExcel, generateMovementsExcel } from "@/lib/excel-generator";
 
 export default function Reports() {
   const { items, movements, stats } = useApp();
@@ -99,14 +98,6 @@ export default function Reports() {
     generateInventoryPDF(filteredItems);
   };
   
-  const handleExportInventoryExcel = () => {
-    generateInventoryExcel(filteredItems);
-  };
-  
-  const handleExportMovementsExcel = () => {
-    generateMovementsExcel(filteredMovements, items);
-  };
-  
   return (
     <Layout title="Relatórios">
       <div className="animate-fade-in">
@@ -141,7 +132,7 @@ export default function Reports() {
                         <SelectContent>
                           <SelectItem value="all">Todas as categorias</SelectItem>
                           {
-                            ["Máquinas VX", "Máquinas Digital", "Notebook/PC", "Suprimentos", "Material de Escritório"]
+                            ["Máquinas VX", "Máquinas Digital", "Notebook/PC", "Suprimentos", "Material de Escritório", "BANCADAS"]
                               .map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {category}
@@ -196,31 +187,14 @@ export default function Reports() {
                 </PopoverContent>
               </Popover>
               
-              {/* Exportar */}
-              {activeTab === "inventory" ? (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={handleExportInventoryExcel}
-                  >
-                    <FileSpreadsheet className="h-4 w-4" /> Excel
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={handleExportInventoryPDF}
-                  >
-                    <FileText className="h-4 w-4" /> PDF
-                  </Button>
-                </div>
-              ) : (
+              {/* PDF Export Button */}
+              {activeTab === "inventory" && (
                 <Button
                   variant="outline"
                   className="flex items-center gap-2"
-                  onClick={handleExportMovementsExcel}
+                  onClick={handleExportInventoryPDF}
                 >
-                  <FileSpreadsheet className="h-4 w-4" /> Excel
+                  <FileText className="h-4 w-4" /> PDF
                 </Button>
               )}
             </div>

@@ -1,1 +1,2 @@
-// This file is now empty as we've removed Excel functionality
+
+// This file is empty as Excel functionality has been removed
