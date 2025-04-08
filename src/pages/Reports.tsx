@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -64,27 +63,22 @@ export default function Reports() {
     const movementDate = new Date(movement.date);
     let matchesType = true;
     
-    // Filtro por tipo de movimento
     if (selectedMovementType !== 'all') {
       matchesType = movement.type === selectedMovementType;
     }
     
-    // Se não há filtro de data, retorna com base apenas no tipo
     if (!dateRange.from && !dateRange.to) {
       return matchesType;
     }
     
-    // Se há apenas data inicial
     if (dateRange.from && !dateRange.to) {
       return movementDate >= dateRange.from && matchesType;
     }
     
-    // Se há apenas data final
     if (!dateRange.from && dateRange.to) {
       return movementDate <= dateRange.to && matchesType;
     }
     
-    // Se há ambas as datas
     return movementDate >= dateRange.from! && movementDate <= dateRange.to! && matchesType;
   });
   
@@ -109,7 +103,6 @@ export default function Reports() {
             </TabsList>
             
             <div className="flex items-center gap-3">
-              {/* Filtros */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="flex items-center gap-2">
@@ -132,7 +125,7 @@ export default function Reports() {
                         <SelectContent>
                           <SelectItem value="all">Todas as categorias</SelectItem>
                           {
-                            ["Máquinas VX", "Máquinas Digital", "Notebook/PC", "Suprimentos", "Material de Escritório", "BANCADAS"]
+                            ["Máquinas VX", "Máquinas Digital", "Notebook/PC", "Suprimentos", "Material de Escritório", "Bancadas", "Chips"]
                               .map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {category}
@@ -187,7 +180,6 @@ export default function Reports() {
                 </PopoverContent>
               </Popover>
               
-              {/* PDF Export Button */}
               {activeTab === "inventory" && (
                 <Button
                   variant="outline"

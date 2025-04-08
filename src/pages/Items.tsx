@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -50,7 +51,8 @@ const itemCategories: ItemCategory[] = [
   "Notebook/PC",
   "Suprimentos",
   "Material de Escritório",
-  "BANCADAS",
+  "Bancadas",
+  "Chips",
 ];
 
 interface ItemFormData {

@@ -1,4 +1,5 @@
-export type ItemCategory = 'Máquinas VX' | 'Máquinas Digital' | 'Notebook/PC' | 'Suprimentos' | 'Material de Escritório' | 'BANCADAS';
+
+export type ItemCategory = 'Máquinas VX' | 'Máquinas Digital' | 'Notebook/PC' | 'Suprimentos' | 'Material de Escritório' | 'Bancadas' | 'Chips';
 
 export interface Item {
   id: string;
