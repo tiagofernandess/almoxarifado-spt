@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout";
 import Return from "./pages/Return";
 import Labels from "./pages/Labels";
 import Reports from "./pages/Reports";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,11 @@ const App = () => (
               <Route path="/reports" element={
                 <ProtectedRoute>
                   <Reports />
+                </ProtectedRoute>
+              } />
+              <Route path="/users" element={
+                <ProtectedRoute>
+                  <Users />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

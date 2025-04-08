@@ -11,8 +11,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock user for testing
-const MOCK_USER = { username: "admin", password: "123456" };
+// Storage key for users
+const USERS_STORAGE_KEY = "sorte-paratodos-users";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,8 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (username: string, password: string): boolean => {
-    // Check credentials against mock user
-    if (username === MOCK_USER.username && password === MOCK_USER.password) {
+    // Carregar usuários do localStorage
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    const users: User[] = storedUsers ? JSON.parse(storedUsers) : [{ username: "admin", password: "123456" }];
+    
+    // Verificar credenciais
+    const foundUser = users.find(u => u.username === username && u.password === password);
+    
+    if (foundUser) {
       setIsAuthenticated(true);
       setUser(username);
       localStorage.setItem('auth-user', username);

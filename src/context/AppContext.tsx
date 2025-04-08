@@ -1,3 +1,4 @@
+
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { Item, ItemMovement, Seller, DashboardStats, ItemCategory } from "@/types";
 import storage from "@/lib/storage";
@@ -43,7 +44,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       "Notebook/PC": 0,
       "Suprimentos": 0,
       "Material de Escritório": 0,
-      "BANCADAS": 0
+      "Bancadas": 0,
+      "Chips": 0
     }
   });
   
@@ -63,7 +65,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       "Notebook/PC": 0,
       "Suprimentos": 0,
       "Material de Escritório": 0,
-      "BANCADAS": 0
+      "Bancadas": 0,
+      "Chips": 0
     };
     
     items.forEach(item => {

@@ -14,6 +14,7 @@ import {
   Tag,
   ChevronRight,
   LogOut,
+  UserCog,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -51,6 +52,7 @@ export function AppSidebar() {
           <NavItem to="/return" icon={<RefreshCw size={20} />} label="Devolução" expanded={expanded} />
           <NavItem to="/labels" icon={<Tag size={20} />} label="Etiquetas" expanded={expanded} />
           <NavItem to="/reports" icon={<FileText size={20} />} label="Relatórios" expanded={expanded} />
+          <NavItem to="/users" icon={<UserCog size={20} />} label="Usuários" expanded={expanded} />
         </nav>
       </div>
       
