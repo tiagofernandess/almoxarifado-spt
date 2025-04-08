@@ -104,7 +104,7 @@ export default function Users() {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.username === editingUserId
-            ? { ...user, ...data }
+            ? { username: data.username, password: data.password || user.password }
             : user
         )
       );
@@ -122,8 +122,12 @@ export default function Users() {
         return;
       }
 
-      // Add new user
-      setUsers((prevUsers) => [...prevUsers, data]);
+      // Add new user with required username and password
+      setUsers((prevUsers) => [...prevUsers, { 
+        username: data.username, 
+        password: data.password 
+      }]);
+      
       toast({
         title: "Usuário adicionado",
         description: `${data.username} foi adicionado com sucesso.`

@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -120,11 +120,6 @@ export default function Login() {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="text-center">
-            <p className="text-xs text-muted-foreground w-full">
-              Utilize admin / 123456 para acessar
-            </p>
-          </CardFooter>
         </Card>
       </div>
     </div>
