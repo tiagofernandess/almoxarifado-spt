@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -135,40 +134,32 @@ export default function Return() {
     }
   };
   
-  const handleReturn = () => {
+  const handleReturn = async () => {
     if (!responsibleName || selectedItems.length === 0) {
       return;
     }
     
-    const movementData = {
-      responsibleName,
-      items: selectedItems.map((item) => ({
-        itemId: item.itemId,
-        itemName: item.itemName,
-        itemCode: item.itemCode,
-        quantity: item.quantity,
-      })),
-    };
-    
-    addReturn(movementData);
-    
-    // Encontrar o movimento recém-criado para gerar o PDF
-    setTimeout(() => {
-      const latestMovement = movements
-        .filter((m) => m.type === "return")
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )[0];
+    try {
+      const movementData = {
+        responsibleName,
+        items: selectedItems.map((item) => ({
+          itemId: item.itemId,
+          itemName: item.itemName,
+          itemCode: item.itemCode,
+          quantity: item.quantity,
+        })),
+      };
       
-      if (latestMovement) {
-        setCurrentMovement(latestMovement);
-        generateMovementPDF(latestMovement, items, []);
-      }
-    }, 500);
-    
-    // Reset form
-    setResponsibleName("");
-    setSelectedItems([]);
+      const newMovement = await addReturn(movementData);
+      setCurrentMovement(newMovement);
+      generateMovementPDF(newMovement, items, []);
+      
+      // Reset form
+      setResponsibleName("");
+      setSelectedItems([]);
+    } catch (error: any) {
+      console.error('Erro ao processar devolução:', error);
+    }
   };
   
   // Verifica se o formulário é válido

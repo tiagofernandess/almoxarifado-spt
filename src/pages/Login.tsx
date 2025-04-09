@@ -1,7 +1,5 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LogIn } from "lucide-react";
+import { useSupabase } from "@/hooks/useSupabase";
 
 const formSchema = z.object({
   username: z.string().min(1, "Usuário é obrigatório"),
@@ -18,7 +17,7 @@ const formSchema = z.object({
 });
 
 export default function Login() {
-  const { login } = useAuth();
+  const { signIn } = useSupabase();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -31,30 +30,21 @@ export default function Login() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     
     try {
-      const success = login(values.username, values.password);
-      
-      if (success) {
-        toast({
-          title: "Login realizado com sucesso",
-          description: "Bem-vindo ao sistema Sorte ParaTodos",
-        });
-        navigate("/dashboard");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro de autenticação",
-          description: "Usuário ou senha incorretos",
-        });
-      }
-    } catch (error) {
+      await signIn(values.username, values.password);
+      toast({
+        title: "Login realizado com sucesso",
+        description: "Bem-vindo ao sistema Sorte ParaTodos",
+      });
+      navigate("/dashboard");
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Ocorreu um erro ao tentar fazer login",
+        title: "Erro de autenticação",
+        description: error.message || "Usuário ou senha incorretos",
       });
     } finally {
       setIsLoading(false);

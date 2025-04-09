@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -63,10 +62,11 @@ interface ItemFormData {
 }
 
 export default function Items() {
-  const { items, addItem, updateItem, deleteItem } = useApp();
+  const { items, addItem, updateItem, deleteItem, loading } = useApp();
   const [isNewItemModalOpen, setIsNewItemModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<ItemFormData>({
     code: "",
@@ -99,35 +99,49 @@ export default function Items() {
     });
   };
   
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!formData.code || !formData.name || formData.totalQuantity <= 0) {
       return;
     }
     
-    addItem({
-      ...formData,
-      availableQuantity: formData.totalQuantity,
-      inUseQuantity: 0,
-    });
-    
-    resetForm();
-    setIsNewItemModalOpen(false);
+    try {
+      setIsSubmitting(true);
+      await addItem({
+        ...formData,
+        availableQuantity: formData.totalQuantity,
+        inUseQuantity: 0,
+      });
+      
+      resetForm();
+      setIsNewItemModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao adicionar item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
-  const handleUpdateItem = () => {
+  const handleUpdateItem = async () => {
     if (!selectedItem) return;
     
-    const updatedItem: Partial<Item> = {
-      code: formData.code,
-      name: formData.name,
-      category: formData.category,
-      totalQuantity: formData.totalQuantity,
-      availableQuantity:
-        formData.totalQuantity - (selectedItem.inUseQuantity || 0),
-    };
-    
-    updateItem(selectedItem.id, updatedItem);
-    setIsEditModalOpen(false);
+    try {
+      setIsSubmitting(true);
+      const updatedItem: Partial<Item> = {
+        code: formData.code,
+        name: formData.name,
+        category: formData.category,
+        totalQuantity: formData.totalQuantity,
+        availableQuantity:
+          formData.totalQuantity - (selectedItem.inUseQuantity || 0),
+      };
+      
+      await updateItem(selectedItem.id, updatedItem);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao atualizar item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const openEditModal = (item: Item) => {
@@ -141,13 +155,30 @@ export default function Items() {
     setIsEditModalOpen(true);
   };
   
-  const confirmDelete = (item: Item) => {
-    deleteItem(item.id);
+  const confirmDelete = async (item: Item) => {
+    try {
+      setIsSubmitting(true);
+      await deleteItem(item.id);
+    } catch (error) {
+      console.error('Erro ao excluir item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const handleExportPDF = () => {
     generateInventoryPDF(items);
   };
+  
+  if (loading) {
+    return (
+      <Layout title="Gestão de Itens">
+        <div className="h-[50vh] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+      </Layout>
+    );
+  }
   
   return (
     <Layout title="Gestão de Itens">
@@ -156,7 +187,7 @@ export default function Items() {
           <div className="flex gap-2">
             <Dialog open={isNewItemModalOpen} onOpenChange={setIsNewItemModalOpen}>
               <DialogTrigger asChild>
-                <Button className="flex gap-2 items-center">
+                <Button className="flex gap-2 items-center" disabled={isSubmitting}>
                   <Plus className="h-4 w-4" /> Novo Item
                 </Button>
               </DialogTrigger>
@@ -174,6 +205,7 @@ export default function Items() {
                         value={formData.code}
                         onChange={handleInputChange}
                         placeholder="Ex: VX-001"
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div className="space-y-2">
@@ -181,6 +213,7 @@ export default function Items() {
                       <Select
                         value={formData.category}
                         onValueChange={handleSelectChange}
+                        disabled={isSubmitting}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a categoria" />
@@ -202,7 +235,8 @@ export default function Items() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Ex: Máquina VX 850"
+                      placeholder="Digite o nome do item"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -211,20 +245,21 @@ export default function Items() {
                       id="totalQuantity"
                       name="totalQuantity"
                       type="number"
-                      min={0}
                       value={formData.totalQuantity}
                       onChange={handleInputChange}
+                      min={0}
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
                 <DialogFooter>
                   <Button
-                    variant="outline"
-                    onClick={() => setIsNewItemModalOpen(false)}
+                    type="submit"
+                    onClick={handleAddItem}
+                    disabled={isSubmitting}
                   >
-                    Cancelar
+                    {isSubmitting ? "Salvando..." : "Salvar"}
                   </Button>
-                  <Button onClick={handleAddItem}>Salvar</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -243,6 +278,7 @@ export default function Items() {
                         name="code"
                         value={formData.code}
                         onChange={handleInputChange}
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div className="space-y-2">
@@ -250,6 +286,7 @@ export default function Items() {
                       <Select
                         value={formData.category}
                         onValueChange={handleSelectChange}
+                        disabled={isSubmitting}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a categoria" />
@@ -271,6 +308,7 @@ export default function Items() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -279,22 +317,21 @@ export default function Items() {
                       id="edit-totalQuantity"
                       name="totalQuantity"
                       type="number"
-                      min={selectedItem?.inUseQuantity || 0}
                       value={formData.totalQuantity}
                       onChange={handleInputChange}
+                      min={0}
+                      disabled={isSubmitting}
                     />
-                    {selectedItem && selectedItem.inUseQuantity > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Atenção: {selectedItem.inUseQuantity} unidades estão em uso.
-                      </p>
-                    )}
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                    Cancelar
+                  <Button
+                    type="submit"
+                    onClick={handleUpdateItem}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Salvando..." : "Salvar"}
                   </Button>
-                  <Button onClick={handleUpdateItem}>Salvar Alterações</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -305,8 +342,9 @@ export default function Items() {
               variant="outline"
               className="flex gap-2 items-center"
               onClick={handleExportPDF}
+              disabled={isSubmitting}
             >
-              <Download className="h-4 w-4" /> PDF
+              <Download className="h-4 w-4" /> Exportar
             </Button>
           </div>
         </div>
@@ -346,12 +384,18 @@ export default function Items() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEditModal(item)}
+                          disabled={isSubmitting}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-600"
+                              disabled={isSubmitting}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
@@ -361,14 +405,19 @@ export default function Items() {
                                 Confirmar exclusão
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Deseja realmente excluir o item{" "}
-                                <strong>{item.name}</strong>? Esta ação não pode ser desfeita.
+                                Tem certeza que deseja excluir este item? Esta ação
+                                não pode ser desfeita.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => confirmDelete(item)}>
-                                Excluir
+                              <AlertDialogCancel disabled={isSubmitting}>
+                                Cancelar
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => confirmDelete(item)}
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting ? "Excluindo..." : "Excluir"}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

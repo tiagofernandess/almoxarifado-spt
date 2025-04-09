@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Layout } from "@/components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Items from "./pages/Items";
@@ -32,42 +32,58 @@ const App = () => (
               <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/items" element={
                 <ProtectedRoute>
-                  <Items />
+                  <Layout>
+                    <Items />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/sellers" element={
                 <ProtectedRoute>
-                  <Sellers />
+                  <Layout>
+                    <Sellers />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/checkout" element={
                 <ProtectedRoute>
-                  <Checkout />
+                  <Layout>
+                    <Checkout />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/return" element={
                 <ProtectedRoute>
-                  <Return />
+                  <Layout>
+                    <Return />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/labels" element={
                 <ProtectedRoute>
-                  <Labels />
+                  <Layout>
+                    <Labels />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/reports" element={
                 <ProtectedRoute>
-                  <Reports />
+                  <Layout>
+                    <Reports />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/users" element={
                 <ProtectedRoute>
-                  <Users />
+                  <Layout>
+                    <Users />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

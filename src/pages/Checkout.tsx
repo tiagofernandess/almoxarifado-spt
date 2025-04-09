@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
@@ -136,45 +135,37 @@ export default function Checkout() {
     }
   };
   
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!responsibleName || selectedItems.length === 0) {
       return;
     }
     
-    const seller = sellers.find((s) => s.id === selectedSellerId);
-    
-    const movementData = {
-      responsibleName,
-      sellerId: selectedSellerId || undefined,
-      sellerName: seller ? seller.name : undefined,
-      items: selectedItems.map((item) => ({
-        itemId: item.itemId,
-        itemName: item.itemName,
-        itemCode: item.itemCode,
-        quantity: item.quantity,
-      })),
-    };
-    
-    addCheckout(movementData);
-    
-    // Encontrar o movimento recém-criado para gerar o PDF
-    setTimeout(() => {
-      const latestMovement = movements
-        .filter((m) => m.type === "checkout")
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )[0];
+    try {
+      const seller = sellers.find((s) => s.id === selectedSellerId);
       
-      if (latestMovement) {
-        setCurrentMovement(latestMovement);
-        generateMovementPDF(latestMovement, items, sellers);
-      }
-    }, 500);
-    
-    // Reset form
-    setResponsibleName("");
-    setSelectedSellerId("");
-    setSelectedItems([]);
+      const movementData = {
+        responsibleName,
+        sellerId: selectedSellerId || undefined,
+        sellerName: seller ? seller.name : undefined,
+        items: selectedItems.map((item) => ({
+          itemId: item.itemId,
+          itemName: item.itemName,
+          itemCode: item.itemCode,
+          quantity: item.quantity,
+        })),
+      };
+      
+      const newMovement = await addCheckout(movementData);
+      setCurrentMovement(newMovement);
+      generateMovementPDF(newMovement, items, sellers);
+      
+      // Reset form
+      setResponsibleName("");
+      setSelectedSellerId("");
+      setSelectedItems([]);
+    } catch (error: any) {
+      console.error('Erro ao processar checkout:', error);
+    }
   };
   
   // Verifica se o formulário é válido

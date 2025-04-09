@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -111,94 +110,99 @@ export const generateInventoryPDF = (items: Item[]) => {
 
 // Gerar relatório de vendedores
 export const generateSellersPDF = (sellers: Seller[]) => {
-  const doc = new jsPDF();
-  
-  // Cabeçalho
-  doc.setFontSize(20);
-  doc.text("Sorte ParaTodos - Relatório de Vendedores", 14, 22);
-  
-  doc.setFontSize(10);
-  doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
-  
-  // Tabela
-  let startY = 35;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  
-  // Cabeçalho da tabela
-  const headers = ["Nome", "WhatsApp", "Endereço", "Cadastrado em"];
-  const colWidths = [50, 40, 60, 40];
-  
-  // Desenhar cabeçalho da tabela
-  let currentX = 10;
-  doc.setFillColor(40, 128, 154);
-  doc.setTextColor(255, 255, 255);
-  doc.rect(10, startY, pageWidth - 20, 10, 'F');
-  
-  headers.forEach((header, index) => {
-    doc.text(header, currentX + 2, startY + 6);
-    currentX += colWidths[index];
-  });
-  
-  // Desenhar linhas da tabela
-  doc.setTextColor(0, 0, 0);
-  startY += 10;
-  
-  sellers.forEach((seller, index) => {
-    // Adicionar nova página se necessário
-    if (startY > 270) {
-      doc.addPage();
-      startY = 20;
+  try {
+    const doc = new jsPDF();
+    
+    // Cabeçalho
+    doc.setFontSize(20);
+    doc.text("Sorte ParaTodos - Relatório de Vendedores", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
+    
+    // Tabela
+    let startY = 35;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Cabeçalho da tabela
+    const headers = ["Nome", "WhatsApp", "Endereço", "Cadastrado em"];
+    const colWidths = [50, 40, 60, 40];
+    
+    // Desenhar cabeçalho da tabela
+    let currentX = 10;
+    doc.setFillColor(40, 128, 154);
+    doc.setTextColor(255, 255, 255);
+    doc.rect(10, startY, pageWidth - 20, 10, 'F');
+    
+    headers.forEach((header, index) => {
+      doc.text(header, currentX + 2, startY + 6);
+      currentX += colWidths[index];
+    });
+    
+    // Desenhar linhas da tabela
+    doc.setTextColor(0, 0, 0);
+    startY += 10;
+    
+    sellers.forEach((seller, index) => {
+      // Adicionar nova página se necessário
+      if (startY > 270) {
+        doc.addPage();
+        startY = 20;
+        
+        // Redesenhar cabeçalho na nova página
+        currentX = 10;
+        doc.setFillColor(40, 128, 154);
+        doc.setTextColor(255, 255, 255);
+        doc.rect(10, startY, pageWidth - 20, 10, 'F');
+        
+        headers.forEach((header, index) => {
+          doc.text(header, currentX + 2, startY + 6);
+          currentX += colWidths[index];
+        });
+        
+        doc.setTextColor(0, 0, 0);
+        startY += 10;
+      }
       
-      // Redesenhar cabeçalho na nova página
+      const rowY = startY;
+      doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
+      doc.rect(10, rowY, pageWidth - 20, 8, 'F');
+      
       currentX = 10;
-      doc.setFillColor(40, 128, 154);
-      doc.setTextColor(255, 255, 255);
-      doc.rect(10, startY, pageWidth - 20, 10, 'F');
+      doc.text(seller.name || '', currentX + 2, rowY + 5);
+      currentX += colWidths[0];
       
-      headers.forEach((header, index) => {
-        doc.text(header, currentX + 2, startY + 6);
-        currentX += colWidths[index];
-      });
+      doc.text(seller.whatsapp || '', currentX + 2, rowY + 5);
+      currentX += colWidths[1];
       
-      doc.setTextColor(0, 0, 0);
-      startY += 10;
+      doc.text(seller.address || '', currentX + 2, rowY + 5);
+      currentX += colWidths[2];
+      
+      doc.text(seller.createdAt ? formatDate(seller.createdAt) : '', currentX + 2, rowY + 5);
+      
+      startY += 8;
+    });
+    
+    // Rodapé
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        doc.internal.pageSize.getWidth() - 30,
+        doc.internal.pageSize.getHeight() - 10
+      );
     }
     
-    const rowY = startY;
-    doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-    doc.rect(10, rowY, pageWidth - 20, 8, 'F');
+    // Salva o PDF
+    doc.save("vendedores-sorte-paratodos.pdf");
     
-    currentX = 10;
-    doc.text(seller.name, currentX + 2, rowY + 5);
-    currentX += colWidths[0];
-    
-    doc.text(seller.whatsapp, currentX + 2, rowY + 5);
-    currentX += colWidths[1];
-    
-    doc.text(seller.address, currentX + 2, rowY + 5);
-    currentX += colWidths[2];
-    
-    doc.text(formatDate(seller.createdAt), currentX + 2, rowY + 5);
-    
-    startY += 8;
-  });
-  
-  // Rodapé
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.text(
-      `Página ${i} de ${pageCount}`,
-      doc.internal.pageSize.getWidth() - 30,
-      doc.internal.pageSize.getHeight() - 10
-    );
+    return doc;
+  } catch (error) {
+    console.error('Erro ao gerar PDF de vendedores:', error);
+    throw error;
   }
-  
-  // Salva o PDF
-  doc.save("vendedores-sorte-paratodos.pdf");
-  
-  return doc;
 };
 
 // Gerar comprovante de saída/devolução
@@ -471,6 +475,148 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
   
   // Salva o PDF
   doc.save("relatorio-geral-sorte-paratodos.pdf");
+  
+  return doc;
+};
+
+// Gerar relatório de movimentações
+export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
+  type: 'all' | 'checkout' | 'return';
+  responsible: string;
+  dateRange: { from: Date | undefined; to: Date | undefined };
+}) => {
+  const doc = new jsPDF();
+  
+  // Cabeçalho
+  doc.setFontSize(20);
+  doc.text("Sorte ParaTodos - Relatório de Movimentações", 14, 22);
+  
+  doc.setFontSize(10);
+  doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
+  
+  // Filtros aplicados
+  let currentY = 38;
+  doc.setFontSize(12);
+  doc.text("Filtros Aplicados:", 14, currentY);
+  currentY += 8;
+  
+  doc.setFontSize(10);
+  doc.text(`Tipo: ${filters.type === 'all' ? 'Todos' : filters.type === 'checkout' ? 'Saídas' : 'Devoluções'}`, 14, currentY);
+  currentY += 6;
+  
+  if (filters.responsible !== 'all') {
+    doc.text(`Responsável: ${filters.responsible}`, 14, currentY);
+    currentY += 6;
+  }
+  
+  if (filters.dateRange.from || filters.dateRange.to) {
+    doc.text(
+      `Período: ${filters.dateRange.from ? format(filters.dateRange.from, 'dd/MM/yyyy', { locale: ptBR }) : 'início'} até ${
+        filters.dateRange.to ? format(filters.dateRange.to, 'dd/MM/yyyy', { locale: ptBR }) : 'hoje'
+      }`,
+      14,
+      currentY
+    );
+    currentY += 10;
+  } else {
+    currentY += 4;
+  }
+  
+  // Tabela
+  const startY = currentY;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Cabeçalho da tabela
+  const headers = ["Data", "Tipo", "Responsável", "Vendedor", "Itens"];
+  const colWidths = [35, 25, 40, 40, 50];
+  
+  // Desenhar cabeçalho da tabela
+  let currentX = 10;
+  doc.setFillColor(40, 128, 154);
+  doc.setTextColor(255, 255, 255);
+  doc.rect(10, startY, pageWidth - 20, 10, 'F');
+  
+  headers.forEach((header, index) => {
+    doc.text(header, currentX + 2, startY + 6);
+    currentX += colWidths[index];
+  });
+  
+  // Desenhar linhas da tabela
+  doc.setTextColor(0, 0, 0);
+  let rowY = startY + 10;
+  
+  movements.forEach((movement, index) => {
+    // Verificar se precisa de nova página
+    if (rowY > 270) {
+      doc.addPage();
+      rowY = 20;
+      
+      // Redesenhar cabeçalho na nova página
+      currentX = 10;
+      doc.setFillColor(40, 128, 154);
+      doc.setTextColor(255, 255, 255);
+      doc.rect(10, rowY, pageWidth - 20, 10, 'F');
+      
+      headers.forEach((header, index) => {
+        doc.text(header, currentX + 2, rowY + 6);
+        currentX += colWidths[index];
+      });
+      
+      doc.setTextColor(0, 0, 0);
+      rowY += 10;
+    }
+    
+    // Calcular altura necessária para os itens
+    const itemsText = movement.items.map(item => 
+      `${item.itemCode} - ${item.itemName} (${item.quantity})`
+    );
+    const itemsHeight = itemsText.length * 5;
+    
+    // Fundo da linha
+    doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
+    doc.rect(10, rowY, pageWidth - 20, 8 + itemsHeight, 'F');
+    
+    // Dados da movimentação
+    currentX = 10;
+    
+    // Data
+    doc.text(format(new Date(movement.date), "dd/MM/yyyy HH:mm", { locale: ptBR }), currentX + 2, rowY + 5);
+    currentX += colWidths[0];
+    
+    // Tipo
+    doc.text(movement.type === "checkout" ? "Saída" : "Devolução", currentX + 2, rowY + 5);
+    currentX += colWidths[1];
+    
+    // Responsável
+    doc.text(movement.responsibleName, currentX + 2, rowY + 5);
+    currentX += colWidths[2];
+    
+    // Vendedor
+    doc.text(movement.sellerName || "-", currentX + 2, rowY + 5);
+    currentX += colWidths[3];
+    
+    // Itens
+    itemsText.forEach((text, i) => {
+      doc.text(`• ${text}`, currentX + 2, rowY + 5 + (i * 5));
+    });
+    
+    rowY += 8 + itemsHeight;
+  });
+  
+  // Rodapé
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.text(
+      `Página ${i} de ${pageCount}`,
+      doc.internal.pageSize.getWidth() - 30,
+      doc.internal.pageSize.getHeight() - 10
+    );
+  }
+  
+  // Salvar o PDF
+  doc.save("movimentacoes-sorte-paratodos.pdf");
   
   return doc;
 };

@@ -1,67 +1,46 @@
-
-import { createContext, useState, useEffect, useContext, ReactNode } from "react";
-import { User } from "@/types";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
-  isAuthenticated: boolean;
-  user: string | null;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  session: Session | null;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  loading: true,
+});
 
-// Storage key for users
-const USERS_STORAGE_KEY = "sorte-paratodos-users";
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<string | null>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('auth-user');
-    if (storedUser) {
-      setIsAuthenticated(true);
-      setUser(storedUser);
-    }
+    // Verificar sessão atual
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Escutar mudanças na autenticação
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    // Carregar usuários do localStorage
-    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-    const users: User[] = storedUsers ? JSON.parse(storedUsers) : [{ username: "admin", password: "123456" }];
-    
-    // Verificar credenciais
-    const foundUser = users.find(u => u.username === username && u.password === password);
-    
-    if (foundUser) {
-      setIsAuthenticated(true);
-      setUser(username);
-      localStorage.setItem('auth-user', username);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUser(null);
-    localStorage.removeItem('auth-user');
-  };
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ session, loading }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-
-  return context;
+  return useContext(AuthContext);
 }
