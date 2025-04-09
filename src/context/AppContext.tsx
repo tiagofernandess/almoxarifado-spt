@@ -109,11 +109,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addItem = async (newItem: Omit<Item, "id" | "createdAt" | "updatedAt">) => {
     try {
       const item = await supabase.createItem(newItem);
-      setItems(prev => [...prev, item]);
-      toast({
-        title: "Item adicionado",
-        description: `${newItem.name} foi adicionado ao estoque.`
-      });
+    setItems(prev => [...prev, item]);
+    toast({
+      title: "Item adicionado",
+      description: `${newItem.name} foi adicionado ao estoque.`
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao adicionar item",
@@ -127,13 +127,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateItem = async (id: string, updatedItem: Partial<Item>) => {
     try {
       const item = await supabase.updateItem(id, updatedItem);
-      setItems(prev =>
+    setItems(prev =>
         prev.map(i => i.id === id ? item : i)
       );
-      toast({
-        title: "Item atualizado",
-        description: "As alterações foram salvas."
-      });
+    toast({
+      title: "Item atualizado",
+      description: "As alterações foram salvas."
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao atualizar item",
@@ -157,11 +157,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     try {
       await supabase.deleteItem(id);
-      setItems(prev => prev.filter(item => item.id !== id));
-      toast({
-        title: "Item excluído",
-        description: "O item foi removido do estoque."
-      });
+    setItems(prev => prev.filter(item => item.id !== id));
+    toast({
+      title: "Item excluído",
+      description: "O item foi removido do estoque."
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao excluir item",
@@ -175,11 +175,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addSeller = async (newSeller: Omit<Seller, "id" | "createdAt" | "updatedAt">) => {
     try {
       const seller = await supabase.createSeller(newSeller);
-      setSellers(prev => [...prev, seller]);
-      toast({
-        title: "Vendedor adicionado",
-        description: `${newSeller.name} foi adicionado à lista de vendedores.`
-      });
+    setSellers(prev => [...prev, seller]);
+    toast({
+      title: "Vendedor adicionado",
+      description: `${newSeller.name} foi adicionado à lista de vendedores.`
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao adicionar vendedor",
@@ -193,13 +193,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateSeller = async (id: string, updatedSeller: Partial<Seller>) => {
     try {
       const seller = await supabase.updateSeller(id, updatedSeller);
-      setSellers(prev =>
+    setSellers(prev =>
         prev.map(s => s.id === id ? seller : s)
       );
-      toast({
-        title: "Vendedor atualizado",
-        description: "As alterações foram salvas."
-      });
+    toast({
+      title: "Vendedor atualizado",
+      description: "As alterações foram salvas."
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao atualizar vendedor",
@@ -224,11 +224,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     try {
       await supabase.deleteSeller(id);
-      setSellers(prev => prev.filter(seller => seller.id !== id));
-      toast({
-        title: "Vendedor excluído",
-        description: "O vendedor foi removido do sistema."
-      });
+    setSellers(prev => prev.filter(seller => seller.id !== id));
+    toast({
+      title: "Vendedor excluído",
+      description: "O vendedor foi removido do sistema."
+    });
     } catch (error: any) {
       toast({
         title: "Erro ao excluir vendedor",
@@ -266,9 +266,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Criar a movimentação
       const movement = await supabase.createMovement({
-        ...checkout,
+      ...checkout,
         type: "checkout",
-        date: new Date().toISOString()
+      date: new Date().toISOString()
       });
       
       // Atualizar quantidades dos itens
@@ -286,7 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
 
       // Atualizar o estado dos itens
-      setItems(prev => 
+      setItems(prev =>
         prev.map(item => {
           const updated = updatedItems.find(u => u?.id === item.id);
           return updated || item;
@@ -295,9 +295,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       // Atualizar o estado das movimentações
       setMovements(prev => [...prev, movement]);
-
-      toast({
-        title: "Saída registrada",
+    
+    toast({
+      title: "Saída registrada",
         description: "Os itens foram registrados como em uso."
       });
 
@@ -339,9 +339,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Criar a movimentação
       const movement = await supabase.createMovement({
-        ...returnItem,
+      ...returnItem,
         type: "return",
-        date: new Date().toISOString()
+      date: new Date().toISOString()
       });
       
       // Atualizar quantidades dos itens
@@ -359,7 +359,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
 
       // Atualizar o estado dos itens
-      setItems(prev => 
+      setItems(prev =>
         prev.map(item => {
           const updated = updatedItems.find(u => u?.id === item.id);
           return updated || item;
@@ -368,9 +368,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       // Atualizar o estado das movimentações
       setMovements(prev => [...prev, movement]);
-
-      toast({
-        title: "Devolução registrada",
+    
+    toast({
+      title: "Devolução registrada",
         description: "Os itens foram devolvidos ao estoque."
       });
 
