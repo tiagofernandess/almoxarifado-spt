@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,17 +35,25 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Filter } from "lucide-react";
+import { FileText, Filter, Edit2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ItemCategory } from "@/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ItemCategory, ItemMovement } from "@/types";
 import { generateInventoryPDF, generateMovementsReportPDF } from "@/lib/pdf-generator";
 
 export default function Reports() {
-  const { items, movements, stats } = useApp();
+  const { items, movements, stats, sellers, updateMovement } = useApp();
   const [activeTab, setActiveTab] = useState("inventory");
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "all">("all");
   const [selectedMovementType, setSelectedMovementType] = useState<'checkout' | 'return' | 'all'>("all");
@@ -55,6 +65,12 @@ export default function Reports() {
     from: undefined,
     to: undefined,
   });
+  
+  // Estado para o modal de edição
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMovement, setEditingMovement] = useState<ItemMovement | null>(null);
+  const [selectedSellerId, setSelectedSellerId] = useState<string>("");
+  const [editResponsibleName, setEditResponsibleName] = useState<string>("");
   
   // Obter lista única de responsáveis
   const responsibles = [...new Set(movements.map(m => m.responsibleName))].sort();
@@ -111,6 +127,29 @@ export default function Reports() {
       responsible: selectedResponsible,
       dateRange: dateRange
     });
+  };
+
+  const handleEditMovement = (movement: ItemMovement) => {
+    setEditingMovement(movement);
+    setSelectedSellerId(movement.sellerId || "none");
+    setEditResponsibleName(movement.responsibleName || "");
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateMovement = async () => {
+    if (!editingMovement) return;
+    try {
+      const seller = sellers.find(s => s.id === selectedSellerId);
+      await updateMovement(editingMovement.id, {
+        sellerId: selectedSellerId === "none" ? undefined : selectedSellerId,
+        sellerName: selectedSellerId === "none" ? undefined : seller?.name,
+        responsibleName: editResponsibleName,
+        items: editingMovement.items
+      });
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao atualizar movimentação:', error);
+    }
   };
   
   return (
@@ -344,6 +383,7 @@ export default function Reports() {
                         <TableHead>Responsável</TableHead>
                         <TableHead>Vendedor</TableHead>
                         <TableHead>Itens</TableHead>
+                        <TableHead>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -369,11 +409,20 @@ export default function Reports() {
                                 ))}
                               </ul>
                             </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditMovement(movement)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-6">
+                          <TableCell colSpan={6} className="text-center py-6">
                             Nenhuma movimentação encontrada
                           </TableCell>
                         </TableRow>
@@ -386,6 +435,52 @@ export default function Reports() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Edição */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Movimentação</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Responsável</Label>
+              <Input
+                value={editResponsibleName}
+                onChange={e => setEditResponsibleName(e.target.value)}
+                placeholder="Nome do responsável"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Vendedor</Label>
+              <Select
+                value={selectedSellerId}
+                onValueChange={setSelectedSellerId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um vendedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id}>
+                      {seller.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateMovement}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

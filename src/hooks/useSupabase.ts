@@ -247,6 +247,35 @@ export function useSupabase() {
     }
   }, []);
 
+  const updateMovement = useCallback(async (id: string, movement: Partial<ItemMovement>) => {
+    try {
+      const { data, error } = await supabase
+        .from('item_movements')
+        .update({
+          ...(movement.sellerId && { seller_id: movement.sellerId }),
+          ...(movement.sellerName && { seller_name: movement.sellerName }),
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: data.id,
+        type: data.type,
+        responsibleName: data.responsible_name,
+        sellerId: data.seller_id,
+        sellerName: data.seller_name,
+        date: data.date,
+        items: movement.items || [],
+      };
+    } catch (error: any) {
+      console.error('Erro ao atualizar movimentação:', error);
+      throw new Error(error.message || 'Erro ao atualizar a movimentação.');
+    }
+  }, []);
+
   return {
     // Auth
     signIn,
@@ -267,5 +296,6 @@ export function useSupabase() {
     // Movements
     getMovements,
     createMovement,
+    updateMovement,
   };
 } 

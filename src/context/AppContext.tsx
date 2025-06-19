@@ -23,6 +23,7 @@ interface AppContextType {
   // Movements Methods
   addCheckout: (checkout: Omit<ItemMovement, "id" | "type" | "date">) => Promise<ItemMovement>;
   addReturn: (returnItem: Omit<ItemMovement, "id" | "type" | "date">) => Promise<ItemMovement>;
+  updateMovement: (id: string, movement: Partial<ItemMovement>) => Promise<ItemMovement>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -385,6 +386,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
   
+  const updateMovement = async (id: string, movement: Partial<ItemMovement>) => {
+    try {
+      const updatedMovement = await supabase.updateMovement(id, movement);
+      
+      // Atualizar o estado das movimentações
+      setMovements(prev =>
+        prev.map(m => m.id === id ? updatedMovement : m)
+      );
+      
+      toast({
+        title: "Movimentação atualizada",
+        description: "O vendedor foi atualizado com sucesso."
+      });
+
+      return updatedMovement;
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar movimentação",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+  
   return (
     <AppContext.Provider
       value={{
@@ -400,7 +426,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateSeller,
         deleteSeller,
         addCheckout,
-        addReturn
+        addReturn,
+        updateMovement
       }}
     >
       {children}
