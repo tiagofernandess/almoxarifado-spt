@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { Layout } from "@/components/Layout/Layout";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
@@ -155,121 +153,119 @@ export default function Users() {
   };
 
   return (
-    <Layout title="Usuários">
-      <div className="space-y-6 animate-fade-in">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Gerenciamento de Usuários</CardTitle>
-              <CardDescription>
-                Cadastre e gerencie usuários com acesso ao sistema
-              </CardDescription>
-            </div>
-            <Button onClick={openNewUserDialog} className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" /> Novo Usuário
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome de Usuário</TableHead>
-                  <TableHead className="w-[150px]">Ações</TableHead>
+    <div className="space-y-6 animate-fade-in">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Gerenciamento de Usuários</CardTitle>
+            <CardDescription>
+              Cadastre e gerencie usuários com acesso ao sistema
+            </CardDescription>
+          </div>
+          <Button onClick={openNewUserDialog} className="flex items-center gap-2">
+            <PlusCircle className="h-4 w-4" /> Novo Usuário
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome de Usuário</TableHead>
+                <TableHead className="w-[150px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.username}>
+                  <TableCell className="font-medium">{user.username}</TableCell>
+                  <TableCell className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditUserDialog(user)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => deleteUser(user.username)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.username}>
-                    <TableCell className="font-medium">{user.username}</TableCell>
-                    <TableCell className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditUserDialog(user)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => deleteUser(user.username)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-        {/* User Form Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingUserId ? "Editar Usuário" : "Novo Usuário"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingUserId
-                  ? "Atualize os dados do usuário"
-                  : "Preencha os campos para adicionar um novo usuário"}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(saveUser)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome de Usuário</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Digite o nome de usuário" 
-                          {...field} 
-                          disabled={!!editingUserId}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {editingUserId ? "Nova Senha" : "Senha"}
-                        {editingUserId && " (deixe em branco para manter a atual)"}
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="Digite a senha"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button type="button" variant="outline" onClick={closeDialog}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit">
-                    {editingUserId ? "Salvar Alterações" : "Adicionar Usuário"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </Layout>
+      {/* User Form Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingUserId ? "Editar Usuário" : "Novo Usuário"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingUserId
+                ? "Atualize os dados do usuário"
+                : "Preencha os campos para adicionar um novo usuário"}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(saveUser)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome de Usuário</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Digite o nome de usuário" 
+                        {...field} 
+                        disabled={!!editingUserId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {editingUserId ? "Nova Senha" : "Senha"}
+                      {editingUserId && " (deixe em branco para manter a atual)"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="Digite a senha"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={closeDialog}>
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  {editingUserId ? "Salvar Alterações" : "Adicionar Usuário"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

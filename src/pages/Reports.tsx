@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Layout } from "@/components/Layout/Layout";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,7 +152,7 @@ export default function Reports() {
   };
   
   return (
-    <Layout title="Relatórios">
+    <>
       <div className="animate-fade-in">
         <Tabs defaultValue="inventory" onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-between items-center mb-6">
@@ -481,6 +480,6 @@ export default function Reports() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 }

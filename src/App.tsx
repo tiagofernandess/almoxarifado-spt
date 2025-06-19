@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Items from "./pages/Items";
@@ -32,56 +32,56 @@ const App = () => (
               <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Dashboard">
                     <Dashboard />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/items" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Itens">
                     <Items />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/sellers" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Vendedores">
                     <Sellers />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/checkout" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Saída de Itens">
                     <Checkout />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/return" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Devolução de Itens">
                     <Return />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/labels" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Geração de Etiquetas">
                     <Labels />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/reports" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Relatórios">
                     <Reports />
                   </Layout>
                 </ProtectedRoute>
               } />
               <Route path="/users" element={
                 <ProtectedRoute>
-                  <Layout>
+                  <Layout title="Usuários">
                     <Users />
                   </Layout>
                 </ProtectedRoute>
