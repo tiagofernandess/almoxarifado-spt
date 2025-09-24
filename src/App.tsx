@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Items from "./pages/Items";
 import Sellers from "./pages/Sellers";
+import Responsibles from "./pages/Responsibles";
 import Checkout from "./pages/Checkout";
 import Return from "./pages/Return";
 import Labels from "./pages/Labels";
@@ -48,6 +49,13 @@ const App = () => (
                 <ProtectedRoute>
                   <Layout title="Vendedores">
                     <Sellers />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/responsibles" element={
+                <ProtectedRoute>
+                  <Layout title="Responsáveis">
+                    <Responsibles />
                   </Layout>
                 </ProtectedRoute>
               } />

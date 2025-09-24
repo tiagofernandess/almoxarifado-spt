@@ -1,18 +1,19 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
-import { Item, ItemMovement, Seller, DashboardStats, ItemCategory } from "@/types";
+import { Item, ItemMovement, Seller, Responsible, DashboardStats, ItemCategory } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabase } from "@/hooks/useSupabase";
 
 interface AppContextType {
   items: Item[];
   sellers: Seller[];
+  responsibles: Responsible[];
   movements: ItemMovement[];
   stats: DashboardStats;
   loading: boolean;
   
   // Item Methods
   addItem: (item: Omit<Item, "id" | "createdAt" | "updatedAt">) => Promise<void>;
-  updateItem: (id: string, item: Partial<Item>) => Promise<void>;
+  updateItem: (id: string, item: Partial<Item>) => Promise<Item>;
   deleteItem: (id: string) => Promise<void>;
   
   // Seller Methods
@@ -20,10 +21,16 @@ interface AppContextType {
   updateSeller: (id: string, seller: Partial<Seller>) => Promise<void>;
   deleteSeller: (id: string) => Promise<void>;
   
+  // Responsible Methods
+  addResponsible: (responsible: Omit<Responsible, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  updateResponsible: (id: string, responsible: Partial<Responsible>) => Promise<void>;
+  deleteResponsible: (id: string) => Promise<void>;
+  
   // Movements Methods
-  addCheckout: (checkout: Omit<ItemMovement, "id" | "type" | "date">) => Promise<ItemMovement>;
-  addReturn: (returnItem: Omit<ItemMovement, "id" | "type" | "date">) => Promise<ItemMovement>;
+  addCheckout: (checkout: Omit<ItemMovement, "id" | "type">) => Promise<ItemMovement>;
+  addReturn: (returnItem: Omit<ItemMovement, "id" | "type">) => Promise<ItemMovement>;
   updateMovement: (id: string, movement: Partial<ItemMovement>) => Promise<ItemMovement>;
+  deleteMovement: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -34,6 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Item[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
+  const [responsibles, setResponsibles] = useState<Responsible[]>([]);
   const [movements, setMovements] = useState<ItemMovement[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
     totalItems: 0,
@@ -56,14 +64,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [itemsData, sellersData, movementsData] = await Promise.all([
+        const [itemsData, sellersData, responsiblesData, movementsData] = await Promise.all([
           supabase.getItems(),
           supabase.getSellers(),
+          supabase.getResponsibles(),
           supabase.getMovements()
         ]);
         
         setItems(itemsData);
         setSellers(sellersData);
+        setResponsibles(responsiblesData);
         setMovements(movementsData);
       } catch (error: any) {
         toast({
@@ -128,13 +138,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateItem = async (id: string, updatedItem: Partial<Item>) => {
     try {
       const item = await supabase.updateItem(id, updatedItem);
-    setItems(prev =>
+      setItems(prev =>
         prev.map(i => i.id === id ? item : i)
       );
-    toast({
-      title: "Item atualizado",
-      description: "As alterações foram salvas."
-    });
+      toast({
+        title: "Item atualizado",
+        description: "As alterações foram salvas."
+      });
+      return item;
     } catch (error: any) {
       toast({
         title: "Erro ao atualizar item",
@@ -240,7 +251,74 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  const addCheckout = async (checkout: Omit<ItemMovement, "id" | "type" | "date">) => {
+  const addResponsible = async (newResponsible: Omit<Responsible, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      const responsible = await supabase.createResponsible(newResponsible);
+    setResponsibles(prev => [...prev, responsible]);
+    toast({
+      title: "Responsável adicionado",
+      description: `${newResponsible.name} foi adicionado à lista de responsáveis.`
+    });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao adicionar responsável",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+  
+  const updateResponsible = async (id: string, updatedResponsible: Partial<Responsible>) => {
+    try {
+      const responsible = await supabase.updateResponsible(id, updatedResponsible);
+    setResponsibles(prev =>
+        prev.map(r => r.id === id ? responsible : r)
+      );
+    toast({
+      title: "Responsável atualizado",
+      description: "As alterações foram salvas."
+    });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar responsável",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+  
+  const deleteResponsible = async (id: string) => {
+    const responsibleHasMovements = movements.some(movement => movement.responsibleName === responsibles.find(r => r.id === id)?.name);
+    
+    if (responsibleHasMovements) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Este responsável possui movimentações associadas e não pode ser excluído.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      await supabase.deleteResponsible(id);
+    setResponsibles(prev => prev.filter(responsible => responsible.id !== id));
+    toast({
+      title: "Responsável excluído",
+      description: "O responsável foi removido do sistema."
+    });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir responsável",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+  
+  const addCheckout = async (checkout: Omit<ItemMovement, "id" | "type">) => {
     try {
       // Validações
       if (!checkout.responsibleName?.trim()) {
@@ -267,9 +345,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Criar a movimentação
       const movement = await supabase.createMovement({
-      ...checkout,
+        ...checkout,
         type: "checkout",
-      date: new Date().toISOString()
+        date: checkout.date || new Date().toISOString()
       });
       
       // Atualizar quantidades dos itens
@@ -313,7 +391,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  const addReturn = async (returnItem: Omit<ItemMovement, "id" | "type" | "date">) => {
+  const addReturn = async (returnItem: Omit<ItemMovement, "id" | "type">) => {
     try {
       // Validações
       if (!returnItem.responsibleName?.trim()) {
@@ -340,9 +418,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Criar a movimentação
       const movement = await supabase.createMovement({
-      ...returnItem,
+        ...returnItem,
         type: "return",
-      date: new Date().toISOString()
+        date: returnItem.date || new Date().toISOString()
       });
       
       // Atualizar quantidades dos itens
@@ -410,12 +488,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
+
+  const deleteMovement = async (id: string) => {
+    try {
+      const movementToDelete = movements.find(m => m.id === id);
+      if (!movementToDelete) {
+        throw new Error('Movimentação não encontrada.');
+      }
+
+      // Primeiro, reverter as quantidades dos itens
+      if (movementToDelete.type === 'checkout') {
+        // Se era uma saída, devolver os itens ao estoque
+        for (const item of movementToDelete.items) {
+          const currentItem = items.find(i => i.id === item.itemId);
+          if (currentItem) {
+            await updateItem(item.itemId, {
+              availableQuantity: currentItem.availableQuantity + item.quantity,
+              inUseQuantity: currentItem.inUseQuantity - item.quantity
+            });
+          }
+        }
+      } else if (movementToDelete.type === 'return') {
+        // Se era uma devolução, remover os itens do estoque novamente
+        for (const item of movementToDelete.items) {
+          const currentItem = items.find(i => i.id === item.itemId);
+          if (currentItem) {
+            await updateItem(item.itemId, {
+              availableQuantity: currentItem.availableQuantity - item.quantity,
+              inUseQuantity: currentItem.inUseQuantity + item.quantity
+            });
+          }
+        }
+      }
+
+      // Excluir a movimentação do banco
+      await supabase.deleteMovement(id);
+      
+      // Atualizar o estado das movimentações
+      setMovements(prev => prev.filter(m => m.id !== id));
+      
+      toast({
+        title: "Movimentação excluída",
+        description: "A movimentação foi removida e as quantidades dos itens foram revertidas."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir movimentação",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
   
   return (
     <AppContext.Provider
       value={{
         items,
         sellers,
+        responsibles,
         movements,
         stats,
         loading,
@@ -425,9 +556,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addSeller,
         updateSeller,
         deleteSeller,
+        addResponsible,
+        updateResponsible,
+        deleteResponsible,
         addCheckout,
         addReturn,
-        updateMovement
+        updateMovement,
+        deleteMovement
       }}
     >
       {children}

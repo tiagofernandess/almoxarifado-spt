@@ -34,7 +34,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Filter, Edit2 } from "lucide-react";
+import { FileText, Filter, Edit2, Trash2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -48,11 +48,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ItemCategory, ItemMovement } from "@/types";
 import { generateInventoryPDF, generateMovementsReportPDF } from "@/lib/pdf-generator";
 
 export default function Reports() {
-  const { items, movements, stats, sellers, updateMovement } = useApp();
+  const { items, movements, stats, sellers, updateMovement, deleteMovement } = useApp();
   const [activeTab, setActiveTab] = useState("inventory");
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | "all">("all");
   const [selectedMovementType, setSelectedMovementType] = useState<'checkout' | 'return' | 'all'>("all");
@@ -148,6 +159,14 @@ export default function Reports() {
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('Erro ao atualizar movimentação:', error);
+    }
+  };
+
+  const handleDeleteMovement = async (movementId: string) => {
+    try {
+      await deleteMovement(movementId);
+    } catch (error) {
+      console.error("Erro ao excluir movimentação:", error);
     }
   };
   
@@ -390,7 +409,7 @@ export default function Reports() {
                         filteredMovements.map((movement) => (
                           <TableRow key={movement.id}>
                             <TableCell>
-                              {format(new Date(movement.date), "dd/MM/yyyy HH:mm", {
+                              {format(new Date(movement.date), "dd/MM/yyyy", {
                                 locale: ptBR,
                               })}
                             </TableCell>
@@ -409,13 +428,48 @@ export default function Reports() {
                               </ul>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEditMovement(movement)}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEditMovement(movement)}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-red-500 hover:text-red-600"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Confirmar exclusão
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Tem certeza que deseja excluir esta movimentação? 
+                                        Esta ação irá reverter as quantidades dos itens no estoque e não pode ser desfeita.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancelar
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteMovement(movement.id)}
+                                        className="bg-red-500 hover:bg-red-600"
+                                      >
+                                        Excluir
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))

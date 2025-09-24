@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Package,
   Users,
+  UserCheck,
   ArrowRightFromLine,
   ArrowLeftFromLine,
   RefreshCw,
@@ -36,10 +37,10 @@ export function AppSidebar() {
       <div className="flex items-center h-16 px-4 border-b">
         {expanded ? (
           <div className="text-xl font-bold text-sorte-primary">
-            Sorte ParaTodos
+            Sorte Ouro Verde
           </div>
         ) : (
-          <div className="text-xl font-bold text-sorte-primary mx-auto">SP</div>
+          <div className="text-xl font-bold text-sorte-primary mx-auto">SO</div>
         )}
       </div>
       
@@ -47,6 +48,7 @@ export function AppSidebar() {
         <nav className="px-2 space-y-1">
           <NavItem to="/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" expanded={expanded} />
           <NavItem to="/items" icon={<Package size={20} />} label="Itens" expanded={expanded} />
+          <NavItem to="/responsibles" icon={<UserCheck size={20} />} label="Responsáveis" expanded={expanded} />
           <NavItem to="/sellers" icon={<Users size={20} />} label="Vendedores" expanded={expanded} />
           <NavItem to="/checkout" icon={<ArrowRightFromLine size={20} />} label="Saída" expanded={expanded} />
           <NavItem to="/return" icon={<RefreshCw size={20} />} label="Devolução" expanded={expanded} />

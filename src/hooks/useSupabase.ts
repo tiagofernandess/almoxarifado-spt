@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Item, Seller, ItemMovement } from '@/types';
+import { Item, Seller, Responsible, ItemMovement } from '@/types';
 
 export function useSupabase() {
   // Autenticação
@@ -145,6 +145,44 @@ export function useSupabase() {
     if (error) throw error;
   }, []);
 
+  // Responsáveis
+  const getResponsibles = useCallback(async (): Promise<Responsible[]> => {
+    const { data, error } = await supabase
+      .from('responsibles')
+      .select('*');
+    if (error) throw error;
+    return data;
+  }, []);
+
+  const createResponsible = useCallback(async (responsible: Omit<Responsible, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const { data, error } = await supabase
+      .from('responsibles')
+      .insert([responsible])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }, []);
+
+  const updateResponsible = useCallback(async (id: string, responsible: Partial<Responsible>) => {
+    const { data, error } = await supabase
+      .from('responsibles')
+      .update(responsible)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }, []);
+
+  const deleteResponsible = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from('responsibles')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }, []);
+
   // Movimentações
   const getMovements = useCallback(async (): Promise<ItemMovement[]> => {
     try {
@@ -276,6 +314,33 @@ export function useSupabase() {
     }
   }, []);
 
+  const deleteMovement = useCallback(async (id: string) => {
+    try {
+      // Primeiro, excluir os itens da movimentação (devido à foreign key)
+      const { error: itemsError } = await supabase
+        .from('movement_items')
+        .delete()
+        .eq('movement_id', id);
+
+      if (itemsError) {
+        throw new Error('Erro ao excluir itens da movimentação: ' + itemsError.message);
+      }
+
+      // Depois, excluir a movimentação
+      const { error: movementError } = await supabase
+        .from('item_movements')
+        .delete()
+        .eq('id', id);
+
+      if (movementError) {
+        throw new Error('Erro ao excluir movimentação: ' + movementError.message);
+      }
+    } catch (error: any) {
+      console.error('Erro ao excluir movimentação:', error);
+      throw new Error(error.message || 'Erro ao excluir a movimentação.');
+    }
+  }, []);
+
   return {
     // Auth
     signIn,
@@ -293,9 +358,16 @@ export function useSupabase() {
     updateSeller,
     deleteSeller,
     
+    // Responsibles
+    getResponsibles,
+    createResponsible,
+    updateResponsible,
+    deleteResponsible,
+    
     // Movements
     getMovements,
     createMovement,
     updateMovement,
+    deleteMovement,
   };
 } 

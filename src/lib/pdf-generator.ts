@@ -1,11 +1,11 @@
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Item, ItemMovement, Seller } from "@/types";
+import { Item, ItemMovement, Seller, Responsible } from "@/types";
 
 // função utilitária para formatar data
 const formatDate = (dateString: string) => {
-  return format(new Date(dateString), "dd/MM/yyyy HH:mm", {
+  return format(new Date(dateString), "dd/MM/yyyy", {
     locale: ptBR,
   });
 };
@@ -16,7 +16,7 @@ export const generateInventoryPDF = (items: Item[]) => {
   
   // Cabeçalho
   doc.setFontSize(20);
-  doc.text("Sorte ParaTodos - Relatório de Estoque", 14, 22);
+  doc.text("Sorte Ouro Verde - Relatório de Estoque", 14, 22);
   
   doc.setFontSize(10);
   doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
@@ -50,42 +50,42 @@ export const generateInventoryPDF = (items: Item[]) => {
       doc.addPage();
       startY = 20;
       
-      // Redesenhar cabeçalho na nova página
+      // Redesenhar cabeçalho da tabela
       currentX = 10;
       doc.setFillColor(40, 128, 154);
       doc.setTextColor(255, 255, 255);
       doc.rect(10, startY, pageWidth - 20, 10, 'F');
       
-      headers.forEach((header, index) => {
+      headers.forEach((header, headerIndex) => {
         doc.text(header, currentX + 2, startY + 6);
-        currentX += colWidths[index];
+        currentX += colWidths[headerIndex];
       });
       
       doc.setTextColor(0, 0, 0);
       startY += 10;
     }
     
-    const rowY = startY;
+    // Desenhar linha da tabela
     doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-    doc.rect(10, rowY, pageWidth - 20, 8, 'F');
+    doc.rect(10, startY, pageWidth - 20, 8, 'F');
     
     currentX = 10;
-    doc.text(item.code, currentX + 2, rowY + 5);
+    doc.text(item.code, currentX + 2, startY + 5);
     currentX += colWidths[0];
     
-    doc.text(item.name, currentX + 2, rowY + 5);
+    doc.text(item.name, currentX + 2, startY + 5);
     currentX += colWidths[1];
     
-    doc.text(item.category, currentX + 2, rowY + 5);
+    doc.text(item.category, currentX + 2, startY + 5);
     currentX += colWidths[2];
     
-    doc.text(item.totalQuantity.toString(), currentX + 2, rowY + 5);
+    doc.text(item.totalQuantity.toString(), currentX + 2, startY + 5);
     currentX += colWidths[3];
     
-    doc.text(item.availableQuantity.toString(), currentX + 2, rowY + 5);
+    doc.text(item.availableQuantity.toString(), currentX + 2, startY + 5);
     currentX += colWidths[4];
     
-    doc.text(item.inUseQuantity.toString(), currentX + 2, rowY + 5);
+    doc.text(item.inUseQuantity.toString(), currentX + 2, startY + 5);
     
     startY += 8;
   });
@@ -102,20 +102,19 @@ export const generateInventoryPDF = (items: Item[]) => {
     );
   }
   
-  // Salva o PDF
-  doc.save("estoque-sorte-paratodos.pdf");
+  doc.save("estoque-sorte-ouro-verde.pdf");
   
   return doc;
 };
 
-// Gerar relatório de vendedores
-export const generateSellersPDF = (sellers: Seller[]) => {
+// Gerar relatório de responsáveis
+export const generateResponsiblesPDF = (responsibles: Responsible[]) => {
   try {
     const doc = new jsPDF();
     
     // Cabeçalho
     doc.setFontSize(20);
-    doc.text("Sorte ParaTodos - Relatório de Vendedores", 14, 22);
+    doc.text("Sorte Ouro Verde - Relatório de Responsáveis", 14, 22);
     
     doc.setFontSize(10);
     doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
@@ -125,8 +124,8 @@ export const generateSellersPDF = (sellers: Seller[]) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Cabeçalho da tabela
-    const headers = ["Nome", "WhatsApp", "Endereço", "Cadastrado em"];
-    const colWidths = [50, 40, 60, 40];
+    const headers = ["Nome", "WhatsApp", "Endereço"];
+    const colWidths = [60, 40, 90];
     
     // Desenhar cabeçalho da tabela
     let currentX = 10;
@@ -143,42 +142,39 @@ export const generateSellersPDF = (sellers: Seller[]) => {
     doc.setTextColor(0, 0, 0);
     startY += 10;
     
-    sellers.forEach((seller, index) => {
+    responsibles.forEach((responsible, index) => {
       // Adicionar nova página se necessário
       if (startY > 270) {
         doc.addPage();
         startY = 20;
         
-        // Redesenhar cabeçalho na nova página
+        // Redesenhar cabeçalho da tabela
         currentX = 10;
         doc.setFillColor(40, 128, 154);
         doc.setTextColor(255, 255, 255);
         doc.rect(10, startY, pageWidth - 20, 10, 'F');
         
-        headers.forEach((header, index) => {
+        headers.forEach((header, headerIndex) => {
           doc.text(header, currentX + 2, startY + 6);
-          currentX += colWidths[index];
+          currentX += colWidths[headerIndex];
         });
         
         doc.setTextColor(0, 0, 0);
         startY += 10;
       }
       
-      const rowY = startY;
+      // Desenhar linha da tabela
       doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-      doc.rect(10, rowY, pageWidth - 20, 8, 'F');
+      doc.rect(10, startY, pageWidth - 20, 8, 'F');
       
       currentX = 10;
-      doc.text(seller.name || '', currentX + 2, rowY + 5);
+      doc.text(responsible.name, currentX + 2, startY + 5);
       currentX += colWidths[0];
       
-      doc.text(seller.whatsapp || '', currentX + 2, rowY + 5);
+      doc.text(responsible.whatsapp, currentX + 2, startY + 5);
       currentX += colWidths[1];
       
-      doc.text(seller.address || '', currentX + 2, rowY + 5);
-      currentX += colWidths[2];
-      
-      doc.text(seller.createdAt ? formatDate(seller.createdAt) : '', currentX + 2, rowY + 5);
+      doc.text(responsible.address, currentX + 2, startY + 5);
       
       startY += 8;
     });
@@ -195,55 +191,35 @@ export const generateSellersPDF = (sellers: Seller[]) => {
       );
     }
     
-    // Salva o PDF
-    doc.save("vendedores-sorte-paratodos.pdf");
+    doc.save("responsaveis-sorte-ouro-verde.pdf");
     
     return doc;
   } catch (error) {
-    console.error('Erro ao gerar PDF de vendedores:', error);
+    console.error('Erro ao gerar PDF de responsáveis:', error);
     throw error;
   }
 };
 
-// Gerar comprovante de saída/devolução
-export const generateMovementPDF = (movement: ItemMovement, items: Item[], sellers: Seller[]) => {
+// Gerar comprovante de movimentação
+export const generateMovementPDF = (movement: ItemMovement, sellers: Seller[]) => {
   const doc = new jsPDF();
   
-  const seller = movement.sellerId ? 
-    sellers.find(s => s.id === movement.sellerId) : 
-    undefined;
-  
   // Cabeçalho
-  doc.setFontSize(16);
-  doc.text(
-    `Sorte ParaTodos - ${movement.type === 'checkout' ? 'Comprovante de Saída' : 'Comprovante de Devolução'}`,
-    14,
-    15
-  );
+  doc.setFontSize(20);
+  doc.text(`Sorte Ouro Verde - ${movement.type === 'checkout' ? 'Saída' : 'Devolução'}`, 14, 22);
   
-  // Informações gerais
   doc.setFontSize(10);
-  doc.text(`Data: ${formatDate(movement.date)}`, 14, 25);
-  doc.text(`ID da operação: ${movement.id}`, 14, 30);
+  doc.text(`Data: ${formatDate(movement.date)}`, 14, 30);
   doc.text(`Responsável: ${movement.responsibleName}`, 14, 35);
-  
-  let startY = 40;
-  
-  if (seller) {
-    doc.text(`Vendedor: ${seller.name}`, 14, startY);
-    startY += 5;
-    doc.text(`Contato: ${seller.whatsapp}`, 14, startY);
-    startY += 5;
-    doc.text(`Endereço: ${seller.address}`, 14, startY);
-    startY += 10;
-  }
+  doc.text(`Vendedor: ${movement.sellerName || 'N/A'}`, 14, 40);
   
   // Tabela de itens
+  let startY = 50;
   const pageWidth = doc.internal.pageSize.getWidth();
   
   // Cabeçalho da tabela
-  const headers = ["Código", "Item", "Quantidade"];
-  const colWidths = [40, 100, 40];
+  const headers = ["Código", "Nome", "Quantidade"];
+  const colWidths = [30, 100, 30];
   
   // Desenhar cabeçalho da tabela
   let currentX = 10;
@@ -261,51 +237,34 @@ export const generateMovementPDF = (movement: ItemMovement, items: Item[], selle
   startY += 10;
   
   movement.items.forEach((item, index) => {
-    // Adicionar nova página se necessário
-    if (startY > 270) {
-      doc.addPage();
-      startY = 20;
-      
-      // Redesenhar cabeçalho na nova página
-      currentX = 10;
-      doc.setFillColor(40, 128, 154);
-      doc.setTextColor(255, 255, 255);
-      doc.rect(10, startY, pageWidth - 20, 10, 'F');
-      
-      headers.forEach((header, index) => {
-        doc.text(header, currentX + 2, startY + 6);
-        currentX += colWidths[index];
-      });
-      
-      doc.setTextColor(0, 0, 0);
-      startY += 10;
-    }
-    
-    const rowY = startY;
+    // Desenhar linha da tabela
     doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-    doc.rect(10, rowY, pageWidth - 20, 8, 'F');
+    doc.rect(10, startY, pageWidth - 20, 8, 'F');
     
     currentX = 10;
-    doc.text(item.itemCode, currentX + 2, rowY + 5);
+    doc.text(item.itemCode, currentX + 2, startY + 5);
     currentX += colWidths[0];
     
-    doc.text(item.itemName, currentX + 2, rowY + 5);
+    doc.text(item.itemName, currentX + 2, startY + 5);
     currentX += colWidths[1];
     
-    doc.text(item.quantity.toString(), currentX + 2, rowY + 5);
+    doc.text(item.quantity.toString(), currentX + 2, startY + 5);
     
     startY += 8;
   });
   
-  // Assinaturas
-  startY += 20;
-  doc.line(14, startY, 90, startY); // linha para assinatura do responsável
-  doc.line(120, startY, 196, startY); // linha para assinatura do recebedor
+  // Rodapé
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.text(
+      `Página ${i} de ${pageCount}`,
+      doc.internal.pageSize.getWidth() - 30,
+      doc.internal.pageSize.getHeight() - 10
+    );
+  }
   
-  doc.text("Responsável", 40, startY + 5);
-  doc.text("Recebedor", 150, startY + 5);
-  
-  // Salva o PDF
   doc.save(`${movement.type === 'checkout' ? 'saida' : 'devolucao'}-${movement.id.slice(0, 8)}.pdf`);
   
   return doc;
@@ -342,7 +301,7 @@ export const generateLabelsPDF = (startNumber: number, endNumber: number, custom
       
       // Título da página
       doc.setFontSize(8);
-      doc.text(`Sorte ParaTodos - Etiquetas - Pág. ${currentPage}`, marginX, 5);
+      doc.text(`Sorte Ouro Verde - Etiquetas - Pág. ${currentPage}`, marginX, 5);
     }
     
     const currentNumber = startNumber + i;
@@ -386,7 +345,7 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
   
   // Cabeçalho
   doc.setFontSize(20);
-  doc.text("Sorte ParaTodos - Relatório Geral", 14, 22);
+  doc.text("Sorte Ouro Verde - Relatório Geral", 14, 22);
   
   doc.setFontSize(10);
   doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
@@ -397,7 +356,7 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
   
   doc.setFontSize(10);
   doc.text(`Total de Itens em Estoque: ${stats.totalItems}`, 20, 50);
-  doc.text(`Total de Vendedores: ${stats.totalSellers}`, 20, 55);
+  doc.text(`Total de Responsáveis: ${stats.totalSellers}`, 20, 55);
   doc.text(`Total de Saídas: ${stats.totalCheckouts}`, 20, 60);
   doc.text(`Total de Devoluções: ${stats.totalReturns}`, 20, 65);
   
@@ -474,7 +433,7 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
   }
   
   // Salva o PDF
-  doc.save("relatorio-geral-sorte-paratodos.pdf");
+  doc.save("relatorio-geral-sorte-ouro-verde.pdf");
   
   return doc;
 };
@@ -485,138 +444,179 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
   responsible: string;
   dateRange: { from: Date | undefined; to: Date | undefined };
 }) => {
-  const doc = new jsPDF();
-  
-  // Cabeçalho
-  doc.setFontSize(20);
-  doc.text("Sorte ParaTodos - Relatório de Movimentações", 14, 22);
-  
-  doc.setFontSize(10);
-  doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, 14, 30);
-  
-  // Filtros aplicados
-  let currentY = 38;
-  doc.setFontSize(12);
-  doc.text("Filtros Aplicados:", 14, currentY);
-  currentY += 8;
-  
-  doc.setFontSize(10);
-  doc.text(`Tipo: ${filters.type === 'all' ? 'Todos' : filters.type === 'checkout' ? 'Saídas' : 'Devoluções'}`, 14, currentY);
-  currentY += 6;
-  
-  if (filters.responsible !== 'all') {
-    doc.text(`Responsável: ${filters.responsible}`, 14, currentY);
-    currentY += 6;
-  }
-  
-  if (filters.dateRange.from || filters.dateRange.to) {
-    doc.text(
-      `Período: ${filters.dateRange.from ? format(filters.dateRange.from, 'dd/MM/yyyy', { locale: ptBR }) : 'início'} até ${
-        filters.dateRange.to ? format(filters.dateRange.to, 'dd/MM/yyyy', { locale: ptBR }) : 'hoje'
-      }`,
-      14,
-      currentY
-    );
-    currentY += 10;
-  } else {
-    currentY += 4;
-  }
-  
-  // Tabela
-  const startY = currentY;
+  const doc = new jsPDF('landscape', 'mm', 'a4'); // Orientação horizontal
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Cores personalizadas
+  const primaryColor: [number, number, number] = [40, 128, 154]; // Azul sorte
+  const lightGray: [number, number, number] = [248, 249, 250];
+  const darkGray: [number, number, number] = [55, 65, 81];
+  
+  // Função para adicionar cabeçalho em todas as páginas
+  const addHeader = (pageNum: number) => {
+    doc.setPage(pageNum);
+    
+    // Logo/Header
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, pageWidth, 25, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text("SORTE OURO VERDE", 20, 16);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text("Relatório de Movimentações", 20, 22);
+    
+    // Data de geração
+    doc.setFontSize(8);
+    doc.text(`Gerado em: ${formatDate(new Date().toISOString())}`, pageWidth - 50, 16);
+  };
+  
+  // Função para adicionar rodapé
+  const addFooter = (pageNum: number, totalPages: number) => {
+    doc.setPage(pageNum);
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Página ${pageNum} de ${totalPages}`, pageWidth - 30, pageHeight - 10);
+    doc.text("Sistema de Gestão de Almoxarifado", 20, pageHeight - 10);
+  };
+  
+  // Página 1 - Cabeçalho e resumo
+  addHeader(1);
+  
+  let currentY = 25;
+  
+  // Pular direto para a tabela
+  
+  // Tabela de movimentações (sem título)
   
   // Cabeçalho da tabela
   const headers = ["Data", "Tipo", "Responsável", "Vendedor", "Itens"];
-  const colWidths = [35, 25, 40, 40, 50];
+  const colWidths = [25, 20, 40, 40, 150]; // Mais compacto
   
-  // Desenhar cabeçalho da tabela
-  let currentX = 10;
-  doc.setFillColor(40, 128, 154);
-  doc.setTextColor(255, 255, 255);
-  doc.rect(10, startY, pageWidth - 20, 10, 'F');
+  // Desenhar cabeçalho da tabela com fundo claro
+  doc.setFillColor(240, 240, 240);
+  doc.rect(15, currentY, pageWidth - 30, 8, 'F');
+  doc.setTextColor(0, 0, 0);
   
+  let currentX = 15;
   headers.forEach((header, index) => {
-    doc.text(header, currentX + 2, startY + 6);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(header, currentX + 2, currentY + 6);
     currentX += colWidths[index];
   });
   
+  currentY += 8;
+  
   // Desenhar linhas da tabela
   doc.setTextColor(0, 0, 0);
-  let rowY = startY + 10;
+  doc.setFont('helvetica', 'normal');
   
   movements.forEach((movement, index) => {
     // Verificar se precisa de nova página
-    if (rowY > 270) {
+    if (currentY > pageHeight - 40) {
       doc.addPage();
-      rowY = 20;
+      addHeader(doc.getNumberOfPages());
+      currentY = 25;
       
-      // Redesenhar cabeçalho na nova página
-      currentX = 10;
-      doc.setFillColor(40, 128, 154);
-      doc.setTextColor(255, 255, 255);
-      doc.rect(10, rowY, pageWidth - 20, 10, 'F');
+      // Redesenhar cabeçalho da tabela com fundo claro
+      doc.setFillColor(240, 240, 240);
+      doc.rect(15, currentY, pageWidth - 30, 8, 'F');
+      doc.setTextColor(0, 0, 0);
       
-      headers.forEach((header, index) => {
-        doc.text(header, currentX + 2, rowY + 6);
-        currentX += colWidths[index];
+      currentX = 15;
+      headers.forEach((header, headerIndex) => {
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(header, currentX + 2, currentY + 6);
+        currentX += colWidths[headerIndex];
       });
       
-      doc.setTextColor(0, 0, 0);
-      rowY += 10;
+      currentY += 8;
     }
     
-    // Calcular altura necessária para os itens
-    const itemsText = movement.items.map(item => 
-      `${item.itemCode} - ${item.itemName} (${item.quantity})`
-    );
-    const itemsHeight = itemsText.length * 5;
+    // Desenhar linha da tabela com separação clara
+    const isEven = index % 2 === 0;
+    doc.setFillColor(isEven ? 255 : 248, isEven ? 255 : 249, isEven ? 255 : 250);
+    doc.rect(15, currentY, pageWidth - 30, 7, 'F');
     
-    // Fundo da linha
-    doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-    doc.rect(10, rowY, pageWidth - 20, 8 + itemsHeight, 'F');
-    
-    // Dados da movimentação
-    currentX = 10;
+    currentX = 15;
     
     // Data
-    doc.text(format(new Date(movement.date), "dd/MM/yyyy HH:mm", { locale: ptBR }), currentX + 2, rowY + 5);
+    doc.setFontSize(8);
+    doc.text(formatDate(movement.date), currentX + 2, currentY + 5);
     currentX += colWidths[0];
     
-    // Tipo
-    doc.text(movement.type === "checkout" ? "Saída" : "Devolução", currentX + 2, rowY + 5);
+    // Tipo com badge (sem cor verde)
+    const typeText = movement.type === 'checkout' ? 'SAÍDA' : 'DEVOLUÇÃO';
+    const typeColor: [number, number, number] = movement.type === 'checkout' ? [220, 38, 127] : [100, 100, 100]; // Rosa para saída, cinza para devolução
+    
+    doc.setFillColor(typeColor[0], typeColor[1], typeColor[2]);
+    doc.setTextColor(255, 255, 255);
+    doc.rect(currentX + 1, currentY + 1, 18, 5, 'F');
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.text(typeText, currentX + 3, currentY + 4);
+    
+    doc.setTextColor(0, 0, 0);
     currentX += colWidths[1];
     
     // Responsável
-    doc.text(movement.responsibleName, currentX + 2, rowY + 5);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(movement.responsibleName, currentX + 2, currentY + 5);
     currentX += colWidths[2];
     
     // Vendedor
-    doc.text(movement.sellerName || "-", currentX + 2, rowY + 5);
+    doc.text(movement.sellerName || 'N/A', currentX + 2, currentY + 5);
     currentX += colWidths[3];
     
-    // Itens
-    itemsText.forEach((text, i) => {
-      doc.text(`• ${text}`, currentX + 2, rowY + 5 + (i * 5));
-    });
+    // Itens (incluindo nome do item)
+    const itemsText = movement.items.map(item => `${item.itemCode} - ${item.itemName} (${item.quantity}x)`).join(', ');
     
-    rowY += 8 + itemsHeight;
+    // Verificar se o texto cabe na coluna
+    const maxWidth = colWidths[4] - 4;
+    const textWidth = doc.getTextWidth(itemsText);
+    
+    if (textWidth > maxWidth) {
+      // Quebrar linha se necessário
+      const words = itemsText.split(', ');
+      let line = '';
+      let yOffset = 0;
+      
+      words.forEach((word, index) => {
+        const testLine = line + (line ? ', ' : '') + word;
+        if (doc.getTextWidth(testLine) > maxWidth && line) {
+          doc.text(line, currentX + 2, currentY + 5 + yOffset);
+          line = word;
+          yOffset += 3;
+        } else {
+          line = testLine;
+        }
+      });
+      
+      if (line) {
+        doc.text(line, currentX + 2, currentY + 5 + yOffset);
+      }
+    } else {
+      doc.text(itemsText, currentX + 2, currentY + 5);
+    }
+    
+    currentY += 7;
   });
   
-  // Rodapé
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.text(
-      `Página ${i} de ${pageCount}`,
-      doc.internal.pageSize.getWidth() - 30,
-      doc.internal.pageSize.getHeight() - 10
-    );
+  // Adicionar rodapé em todas as páginas
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    addFooter(i, totalPages);
   }
   
   // Salvar o PDF
-  doc.save("movimentacoes-sorte-paratodos.pdf");
+  doc.save("relatorio-movimentacoes-sorte-ouro-verde.pdf");
   
   return doc;
 };

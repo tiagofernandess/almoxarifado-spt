@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for Sorte ParaTodos
+				// Custom colors for Sorte Ouro Verde
 				sorte: {
 					blue: '#28809A',
 					dark: '#252525',

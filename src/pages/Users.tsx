@@ -34,7 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 // Storage key for users
-const USERS_STORAGE_KEY = "sorte-paratodos-users";
+const USERS_STORAGE_KEY = "sorte-ouro-verde-users";
 
 // Schema for form validation
 const userSchema = z.object({

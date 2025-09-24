@@ -48,14 +48,15 @@ interface CheckoutItem {
 }
 
 export default function Checkout() {
-  const { items, sellers, addCheckout, movements } = useApp();
-  const [responsibleName, setResponsibleName] = useState("");
+  const { items, sellers, responsibles, addCheckout, movements } = useApp();
+  const [selectedResponsibleId, setSelectedResponsibleId] = useState("");
   const [selectedSellerId, setSelectedSellerId] = useState("");
   const [selectedItems, setSelectedItems] = useState<CheckoutItem[]>([]);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemQuantity, setSelectedItemQuantity] = useState(1);
   const [itemSearch, setItemSearch] = useState("");
+  const [checkoutDate, setCheckoutDate] = useState<string>(new Date().toISOString().split('T')[0]);
   
   // Estado para o comprovante atual
   const [currentMovement, setCurrentMovement] = useState<ItemMovement | null>(null);
@@ -140,17 +141,24 @@ export default function Checkout() {
   };
   
   const handleCheckout = async () => {
-    if (!responsibleName || selectedItems.length === 0) {
+    if (!selectedResponsibleId || selectedItems.length === 0) {
       return;
     }
     
     try {
+      const responsible = responsibles.find((r) => r.id === selectedResponsibleId);
       const seller = sellers.find((s) => s.id === selectedSellerId);
       
+      if (!responsible) {
+        console.error("Responsável não encontrado");
+        return;
+      }
+      
       const movementData = {
-        responsibleName,
+        responsibleName: responsible.name,
         sellerId: selectedSellerId || undefined,
         sellerName: seller ? seller.name : undefined,
+        date: new Date(checkoutDate + 'T00:00:00').toISOString(),
         items: selectedItems.map((item) => ({
           itemId: item.itemId,
           itemName: item.itemName,
@@ -161,10 +169,10 @@ export default function Checkout() {
       
       const newMovement = await addCheckout(movementData);
       setCurrentMovement(newMovement);
-      generateMovementPDF(newMovement, items, sellers);
+      generateMovementPDF(newMovement, sellers);
       
       // Reset form
-      setResponsibleName("");
+      setSelectedResponsibleId("");
       setSelectedSellerId("");
       setSelectedItems([]);
     } catch (error: any) {
@@ -173,7 +181,7 @@ export default function Checkout() {
   };
   
   // Verifica se o formulário é válido
-  const isFormValid = responsibleName && selectedItems.length > 0;
+  const isFormValid = selectedResponsibleId && selectedItems.length > 0;
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
@@ -189,13 +197,22 @@ export default function Checkout() {
             {/* Dados do responsável e vendedor */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="responsibleName">Nome do Responsável</Label>
-                <Input
-                  id="responsibleName"
-                  value={responsibleName}
-                  onChange={(e) => setResponsibleName(e.target.value)}
-                  placeholder="Nome do responsável"
-                />
+                <Label htmlFor="responsible">Responsável</Label>
+                <Select
+                  value={selectedResponsibleId}
+                  onValueChange={setSelectedResponsibleId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o responsável" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {responsibles.map((responsible) => (
+                      <SelectItem key={responsible.id} value={responsible.id}>
+                        {responsible.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="seller">Vendedor (opcional)</Label>
@@ -212,6 +229,17 @@ export default function Checkout() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            {/* Campo de data */}
+            <div className="space-y-2">
+              <Label htmlFor="checkoutDate">Data da Saída</Label>
+              <Input
+                id="checkoutDate"
+                type="date"
+                value={checkoutDate}
+                onChange={(e) => setCheckoutDate(e.target.value)}
+              />
             </div>
             
             {/* Itens selecionados */}
@@ -389,7 +417,7 @@ export default function Checkout() {
                   variant="outline"
                   className="w-full mt-4"
                   onClick={() =>
-                    generateMovementPDF(currentMovement, items, sellers)
+                    generateMovementPDF(currentMovement, sellers)
                   }
                 >
                   <FileText className="h-4 w-4 mr-2" /> Gerar PDF

@@ -1,5 +1,5 @@
 {
-  "name": "sorte-almoxarifado-manager",
+  "name": "sorte-ouro-verde-manager",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -26,6 +26,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.0.0",
+    "file-saver": "^2.0.5",
     "jspdf": "^2.5.1",
     "lucide-react": "^0.331.0",
     "react": "^18.2.0",
@@ -36,9 +37,11 @@
     "sonner": "^1.4.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",

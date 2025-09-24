@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { generateSellersPDF } from "@/lib/pdf-generator";
+import { generateResponsiblesPDF } from "@/lib/pdf-generator";
 
 interface SellerFormData {
   name: string;
@@ -126,7 +126,7 @@ export default function Sellers() {
   const handleExportPDF = () => {
     try {
       if (sellers && sellers.length > 0) {
-        generateSellersPDF(sellers);
+        generateResponsiblesPDF(sellers);
       }
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -214,12 +214,12 @@ export default function Sellers() {
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-white z-50 shadow-sm">
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>WhatsApp</TableHead>
-              <TableHead>Endereço</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="bg-white border-b">Nome</TableHead>
+              <TableHead className="bg-white border-b">WhatsApp</TableHead>
+              <TableHead className="bg-white border-b">Endereço</TableHead>
+              <TableHead className="text-right bg-white border-b">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

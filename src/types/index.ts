@@ -22,6 +22,15 @@ export interface Seller {
   updatedAt: string;
 }
 
+export interface Responsible {
+  id: string;
+  name: string;
+  whatsapp: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ItemMovement {
   id: string;
   type: 'checkout' | 'return'; // checkout = saída, return = devolução
@@ -47,6 +56,15 @@ export interface DashboardStats {
 
 export interface LabelTemplate {
   startNumber: number;
+  endNumber: number;
+  customPhrase: string;
+}
+
+export interface User {
+  username: string;
+  password: string;
+}
+
   endNumber: number;
   customPhrase: string;
 }

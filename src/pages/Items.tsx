@@ -347,16 +347,16 @@ export default function Items() {
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-white z-50 shadow-sm">
             <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead className="text-center">Qtd. Total</TableHead>
-              <TableHead className="text-center">Disponível</TableHead>
-              <TableHead className="text-center">Em Uso</TableHead>
-              <TableHead className="text-center">Atualizado</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="bg-white border-b">Código</TableHead>
+              <TableHead className="bg-white border-b">Nome</TableHead>
+              <TableHead className="bg-white border-b">Categoria</TableHead>
+              <TableHead className="text-center bg-white border-b">Qtd. Total</TableHead>
+              <TableHead className="text-center bg-white border-b">Disponível</TableHead>
+              <TableHead className="text-center bg-white border-b">Em Uso</TableHead>
+              <TableHead className="text-center bg-white border-b">Atualizado</TableHead>
+              <TableHead className="text-right bg-white border-b">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

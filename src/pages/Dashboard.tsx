@@ -43,10 +43,10 @@ export default function Dashboard() {
           description="Total de itens cadastrados"
         />
         <StatsCard
-          title="Vendedores"
+          title="Responsáveis"
           value={stats.totalSellers}
           icon={Users}
-          description="Total de vendedores"
+          description="Total de responsáveis"
         />
         <StatsCard
           title="Saídas"
