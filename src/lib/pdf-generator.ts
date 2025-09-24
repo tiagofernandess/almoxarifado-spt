@@ -539,10 +539,34 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
       currentY += 8;
     }
     
+    // Calcular altura necessária para os itens primeiro
+    const itemsText = movement.items.map(item => `${item.itemCode} - ${item.itemName} (${item.quantity}x)`).join(', ');
+    const maxWidth = colWidths[4] - 4;
+    const textWidth = doc.getTextWidth(itemsText);
+    
+    let estimatedHeight = 7; // altura base
+    if (textWidth > maxWidth) {
+      const words = itemsText.split(', ');
+      let line = '';
+      let lines = 1;
+      
+      words.forEach((word) => {
+        const testLine = line + (line ? ', ' : '') + word;
+        if (doc.getTextWidth(testLine) > maxWidth && line) {
+          line = word;
+          lines++;
+        } else {
+          line = testLine;
+        }
+      });
+      
+      estimatedHeight = 7 + (lines - 1) * 3;
+    }
+    
     // Desenhar linha da tabela com separação clara
     const isEven = index % 2 === 0;
     doc.setFillColor(isEven ? 255 : 248, isEven ? 255 : 249, isEven ? 255 : 250);
-    doc.rect(15, currentY, pageWidth - 30, 7, 'F');
+    doc.rect(15, currentY, pageWidth - 30, estimatedHeight, 'F');
     
     currentX = 15;
     
@@ -575,12 +599,9 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
     doc.text(movement.sellerName || 'N/A', currentX + 2, currentY + 5);
     currentX += colWidths[3];
     
-    // Itens (incluindo nome do item)
-    const itemsText = movement.items.map(item => `${item.itemCode} - ${item.itemName} (${item.quantity}x)`).join(', ');
+    // Itens (incluindo nome do item) - usar variáveis já declaradas
     
-    // Verificar se o texto cabe na coluna
-    const maxWidth = colWidths[4] - 4;
-    const textWidth = doc.getTextWidth(itemsText);
+    let maxYOffset = 0;
     
     if (textWidth > maxWidth) {
       // Quebrar linha se necessário
@@ -594,6 +615,7 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
           doc.text(line, currentX + 2, currentY + 5 + yOffset);
           line = word;
           yOffset += 3;
+          maxYOffset = Math.max(maxYOffset, yOffset);
         } else {
           line = testLine;
         }
@@ -601,12 +623,14 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
       
       if (line) {
         doc.text(line, currentX + 2, currentY + 5 + yOffset);
+        maxYOffset = Math.max(maxYOffset, yOffset);
       }
     } else {
       doc.text(itemsText, currentX + 2, currentY + 5);
     }
     
-    currentY += 7;
+    // Usar a altura estimada calculada anteriormente
+    currentY += estimatedHeight;
   });
   
   // Adicionar rodapé em todas as páginas
