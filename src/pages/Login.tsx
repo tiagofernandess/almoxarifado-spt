@@ -37,7 +37,7 @@ export default function Login() {
       await signIn(values.username, values.password);
       toast({
         title: "Login realizado com sucesso",
-        description: "Bem-vindo ao sistema Sorte ParaTodos",
+        description: "Bem-vindo ao sistema Sorte Ouro Verde",
       });
       navigate("/dashboard");
     } catch (error: any) {
@@ -56,7 +56,7 @@ export default function Login() {
       <div className="w-full max-w-md px-4">
         <Card className="animate-fade-in">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold tracking-tight">Sorte ParaTodos</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">Sorte Ouro Verde</CardTitle>
             <CardDescription>
               Sistema de Gestão de Estoque
             </CardDescription>
