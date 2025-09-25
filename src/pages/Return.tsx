@@ -48,9 +48,9 @@ interface ReturnItem {
 }
 
 export default function Return() {
-  const { items, addReturn, movements } = useApp();
+  const { items, addReturn, movements, responsibles } = useApp();
   const { toast } = useToast();
-  const [responsibleName, setResponsibleName] = useState("");
+  const [selectedResponsibleId, setSelectedResponsibleId] = useState("");
   const [selectedItems, setSelectedItems] = useState<ReturnItem[]>([]);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState("");
@@ -140,12 +140,16 @@ export default function Return() {
   };
   
   const handleReturn = async () => {
-    if (!responsibleName || selectedItems.length === 0) {
+    if (!selectedResponsibleId || selectedItems.length === 0) {
       return;
     }
     try {
+      const responsible = responsibles.find(r => r.id === selectedResponsibleId);
+      if (!responsible) return;
+      
       const movementData = {
-        responsibleName,
+        responsibleName: responsible.name,
+        date: new Date().toISOString(),
         items: selectedItems.map((item) => ({
           itemId: item.itemId,
           itemName: item.itemName,
@@ -160,13 +164,13 @@ export default function Return() {
         title: "Devolução registrada!",
         description: "Deseja gerar o comprovante em PDF?",
         action: (
-          <Button variant="outline" onClick={() => generateMovementPDF(newMovement, items, [])}>
+          <Button variant="outline" onClick={() => generateMovementPDF(newMovement, [])}>
             Gerar PDF
           </Button>
         ),
       });
       // Reset form
-      setResponsibleName("");
+      setSelectedResponsibleId("");
       setSelectedItems([]);
     } catch (error: any) {
       console.error('Erro ao processar devolução:', error);
@@ -174,7 +178,7 @@ export default function Return() {
   };
   
   // Verifica se o formulário é válido
-  const isFormValid = responsibleName && selectedItems.length > 0;
+  const isFormValid = selectedResponsibleId && selectedItems.length > 0;
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
@@ -190,12 +194,21 @@ export default function Return() {
             {/* Dados do responsável */}
             <div className="space-y-2">
               <Label htmlFor="responsibleName">Nome do Responsável</Label>
-              <Input
-                id="responsibleName"
-                value={responsibleName}
-                onChange={(e) => setResponsibleName(e.target.value)}
-                placeholder="Nome do responsável"
-              />
+              <Select
+                value={selectedResponsibleId}
+                onValueChange={setSelectedResponsibleId}
+              >
+                <SelectTrigger id="responsibleName">
+                  <SelectValue placeholder="Selecione o responsável" />
+                </SelectTrigger>
+                <SelectContent>
+                  {responsibles.map((responsible) => (
+                    <SelectItem key={responsible.id} value={responsible.id}>
+                      {responsible.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             {/* Itens selecionados */}
@@ -368,7 +381,7 @@ export default function Return() {
                   variant="outline"
                   className="w-full mt-4"
                   onClick={() =>
-                    generateMovementPDF(currentMovement, items, [])
+                    generateMovementPDF(currentMovement, [])
                   }
                 >
                   <FileText className="h-4 w-4 mr-2" /> Gerar PDF
