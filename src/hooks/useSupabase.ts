@@ -201,6 +201,7 @@ export function useSupabase() {
         sellerId: movement.seller_id,
         sellerName: movement.seller_name,
         date: movement.date,
+        pontoNovo: movement.ponto_novo || false,
         items: movement.movement_items.map((item: any) => ({
           itemId: item.item_id,
           itemName: item.item_name,
@@ -240,6 +241,7 @@ export function useSupabase() {
           seller_id: movement.sellerId,
           seller_name: movement.sellerName,
           date: movement.date,
+          ponto_novo: movement.pontoNovo || false,
         }])
         .select()
         .single();
@@ -277,6 +279,7 @@ export function useSupabase() {
         sellerId: movementData.seller_id,
         sellerName: movementData.seller_name,
         date: movementData.date,
+        pontoNovo: movementData.ponto_novo || false,
         items: movement.items,
       };
     } catch (error: any) {

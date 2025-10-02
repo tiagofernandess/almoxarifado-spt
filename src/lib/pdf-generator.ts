@@ -213,13 +213,21 @@ export const generateMovementPDF = (movement: ItemMovement, sellers: Seller[]) =
   doc.text(`Responsável: ${movement.responsibleName}`, 14, 35);
   doc.text(`Vendedor: ${movement.sellerName || 'N/A'}`, 14, 40);
   
+  // Mostrar informação de Ponto Novo apenas para saídas
+  if (movement.type === 'checkout' && movement.pontoNovo) {
+    doc.setFontSize(10);
+    doc.setTextColor(220, 38, 127); // Cor rosa para destacar
+    doc.text(`📍 SAÍDA PARA PONTO NOVO`, 14, 45);
+    doc.setTextColor(0, 0, 0); // Voltar cor normal
+  }
+  
   // Tabela de itens
-  let startY = 50;
+  let startY = movement.type === 'checkout' && movement.pontoNovo ? 55 : 50;
   const pageWidth = doc.internal.pageSize.getWidth();
   
-  // Cabeçalho da tabela
-  const headers = ["Código", "Nome", "Quantidade"];
-  const colWidths = [30, 100, 30];
+  // Cabeçalho da tabela - ajustado para códigos maiores
+  const headers = ["Código", "Nome do Item", "Quantidade"];
+  const colWidths = [40, 100, 30]; // Aumentado código de 30 para 40
   
   // Desenhar cabeçalho da tabela
   let currentX = 10;
@@ -237,21 +245,88 @@ export const generateMovementPDF = (movement: ItemMovement, sellers: Seller[]) =
   startY += 10;
   
   movement.items.forEach((item, index) => {
+    // Calcular altura necessária para o item (caso o nome seja muito longo)
+    const itemName = item.itemName;
+    const maxNameWidth = colWidths[1] - 4; // Largura disponível para o nome
+    const nameWidth = doc.getTextWidth(itemName);
+    
+    let rowHeight = 8; // Altura padrão
+    let nameLines = 1;
+    
+    // Se o nome for muito longo, quebrar em múltiplas linhas
+    if (nameWidth > maxNameWidth) {
+      const words = itemName.split(' ');
+      let currentLine = '';
+      let lines = 1;
+      
+      words.forEach((word) => {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        if (doc.getTextWidth(testLine) > maxNameWidth && currentLine) {
+          currentLine = word;
+          lines++;
+        } else {
+          currentLine = testLine;
+        }
+      });
+      
+      nameLines = lines;
+      rowHeight = 8 + (lines - 1) * 4; // Altura adicional para múltiplas linhas
+    }
+    
     // Desenhar linha da tabela
     doc.setFillColor(index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255, index % 2 === 0 ? 240 : 255);
-    doc.rect(10, startY, pageWidth - 20, 8, 'F');
+    doc.rect(10, startY, pageWidth - 20, rowHeight, 'F');
     
     currentX = 10;
+    
+    // Código do item
+    doc.setFontSize(9);
     doc.text(item.itemCode, currentX + 2, startY + 5);
     currentX += colWidths[0];
     
-    doc.text(item.itemName, currentX + 2, startY + 5);
+    // Nome do item (com quebra de linha se necessário)
+    if (nameLines > 1) {
+      const words = itemName.split(' ');
+      let currentLine = '';
+      let yOffset = 0;
+      
+      words.forEach((word) => {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        if (doc.getTextWidth(testLine) > maxNameWidth && currentLine) {
+          doc.text(currentLine, currentX + 2, startY + 5 + yOffset);
+          currentLine = word;
+          yOffset += 4;
+        } else {
+          currentLine = testLine;
+        }
+      });
+      
+      if (currentLine) {
+        doc.text(currentLine, currentX + 2, startY + 5 + yOffset);
+      }
+    } else {
+      doc.text(itemName, currentX + 2, startY + 5);
+    }
     currentX += colWidths[1];
     
+    // Quantidade
     doc.text(item.quantity.toString(), currentX + 2, startY + 5);
     
-    startY += 8;
+    startY += rowHeight;
   });
+  
+  // Adicionar campo de assinatura apenas para saídas (checkout)
+  if (movement.type === 'checkout') {
+    startY += 20; // Espaço antes da assinatura
+    
+    // Texto da assinatura
+    doc.setFontSize(10);
+    doc.text("Assinatura do Responsável:", 20, startY - 5);
+    
+    // Linha para assinatura (na frente do texto)
+    doc.setDrawColor(0, 0, 0);
+    doc.line(80, startY, 140, startY);
+  }
   
   // Rodapé
   const pageCount = doc.getNumberOfPages();
@@ -343,6 +418,16 @@ export const generateLabelsPDF = (startNumber: number, endNumber: number, custom
 export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: Seller[], movements: ItemMovement[]) => {
   const doc = new jsPDF();
   
+  // Calcular total de itens para pontos novos
+  let totalItemsForNewPoints = 0;
+  movements.forEach(movement => {
+    if (movement.type === 'checkout' && movement.pontoNovo) {
+      movement.items.forEach(item => {
+        totalItemsForNewPoints += item.quantity;
+      });
+    }
+  });
+  
   // Cabeçalho
   doc.setFontSize(20);
   doc.text("Sorte Ouro Verde - Relatório Geral", 14, 22);
@@ -360,12 +445,19 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
   doc.text(`Total de Saídas: ${stats.totalCheckouts}`, 20, 60);
   doc.text(`Total de Devoluções: ${stats.totalReturns}`, 20, 65);
   
+  // Estatística de pontos novos
+  if (totalItemsForNewPoints > 0) {
+    doc.setTextColor(220, 38, 127); // Cor rosa para destacar
+    doc.text(`📍 Total de itens para Pontos Novos: ${totalItemsForNewPoints}`, 20, 70);
+    doc.setTextColor(0, 0, 0); // Voltar cor normal
+  }
+  
   // Status por Categoria
   doc.setFontSize(12);
-  doc.text("Status por Categoria", 14, 75);
+  doc.text("Status por Categoria", 14, totalItemsForNewPoints > 0 ? 80 : 75);
   
   // Tabela de categorias
-  let startY = 80;
+  let startY = totalItemsForNewPoints > 0 ? 85 : 80;
   const pageWidth = doc.internal.pageSize.getWidth();
   
   // Cabeçalho da tabela
@@ -439,7 +531,7 @@ export const generateDashboardReportPDF = (stats: any, items: Item[], sellers: S
 };
 
 // Gerar relatório de movimentações
-export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
+export const generateMovementsReportPDF = (movements: ItemMovement[], items: Item[], filters: {
   type: 'all' | 'checkout' | 'return';
   responsible: string;
   dateRange: { from: Date | undefined; to: Date | undefined };
@@ -484,14 +576,97 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
     doc.text("Sistema de Gestão de Almoxarifado", 20, pageHeight - 10);
   };
   
+  // Calcular resumo por categoria
+  const categorySummary: Record<string, { checkouts: number; returns: number }> = {};
+  
+  // Inicializar todas as categorias
+  const allCategories = ['Máquinas VX', 'Máquinas Digital', 'Notebook/PC', 'Suprimentos', 'Material de Escritório', 'Bancadas', 'Chips'];
+  allCategories.forEach(category => {
+    categorySummary[category] = { checkouts: 0, returns: 0 };
+  });
+  
+  // Calcular totais por categoria e pontos novos
+  let totalItemsForNewPoints = 0;
+  
+  movements.forEach(movement => {
+    movement.items.forEach(item => {
+      // Encontrar a categoria do item
+      const itemData = items.find(i => i.id === item.itemId);
+      if (itemData) {
+        const category = itemData.category;
+        if (movement.type === 'checkout') {
+          categorySummary[category].checkouts += item.quantity;
+          
+          // Contar itens para pontos novos
+          if (movement.pontoNovo) {
+            totalItemsForNewPoints += item.quantity;
+          }
+        } else if (movement.type === 'return') {
+          categorySummary[category].returns += item.quantity;
+        }
+      }
+    });
+  });
+  
+  // Ordenar movimentações por data crescente
+  const sortedMovements = [...movements].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA.getTime() - dateB.getTime();
+  });
+  
   // Página 1 - Cabeçalho e resumo
   addHeader(1);
   
-  let currentY = 25;
+  let currentY = 35; // Aumentado para dar espaço ao resumo
   
-  // Pular direto para a tabela
+  // Adicionar resumo por categoria
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text("Resumo por Categoria", 20, currentY);
   
-  // Tabela de movimentações (sem título)
+  currentY += 8;
+  
+  // Mostrar estatística de pontos novos
+  if (totalItemsForNewPoints > 0) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(220, 38, 127); // Cor rosa para destacar
+    doc.text(`📍 Total de itens para Pontos Novos: ${totalItemsForNewPoints}`, 25, currentY);
+    doc.setTextColor(0, 0, 0); // Voltar cor normal
+    currentY += 6;
+  }
+  
+  // Mostrar apenas categorias com movimentações
+  const categoriesWithMovements = Object.entries(categorySummary).filter(([_, totals]) => 
+    totals.checkouts > 0 || totals.returns > 0
+  );
+  
+  if (categoriesWithMovements.length > 0) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    categoriesWithMovements.forEach(([category, totals]) => {
+      if (totals.checkouts > 0) {
+        doc.text(`Saídas - ${category}: ${totals.checkouts}`, 25, currentY);
+        currentY += 5;
+      }
+      if (totals.returns > 0) {
+        doc.text(`Devoluções - ${category}: ${totals.returns}`, 25, currentY);
+        currentY += 5;
+      }
+    });
+  } else {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text("Nenhuma movimentação encontrada no período selecionado.", 25, currentY);
+    currentY += 5;
+  }
+  
+  currentY += 10; // Espaço antes da tabela
+  
+  // Tabela de movimentações
   
   // Cabeçalho da tabela
   const headers = ["Data", "Tipo", "Responsável", "Vendedor", "Itens"];
@@ -516,7 +691,7 @@ export const generateMovementsReportPDF = (movements: ItemMovement[], filters: {
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'normal');
   
-  movements.forEach((movement, index) => {
+  sortedMovements.forEach((movement, index) => {
     // Verificar se precisa de nova página
     if (currentY > pageHeight - 40) {
       doc.addPage();

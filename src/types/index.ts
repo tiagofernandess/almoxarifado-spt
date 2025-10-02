@@ -38,6 +38,7 @@ export interface ItemMovement {
   sellerId?: string;
   sellerName?: string;
   date: string;
+  pontoNovo?: boolean; // Indica se a saída é para um ponto novo
   items: {
     itemId: string;
     itemName: string;

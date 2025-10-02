@@ -57,6 +57,7 @@ export default function Checkout() {
   const [selectedItemQuantity, setSelectedItemQuantity] = useState(1);
   const [itemSearch, setItemSearch] = useState("");
   const [checkoutDate, setCheckoutDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isPontoNovo, setIsPontoNovo] = useState(false);
   
   // Estado para o comprovante atual
   const [currentMovement, setCurrentMovement] = useState<ItemMovement | null>(null);
@@ -159,6 +160,7 @@ export default function Checkout() {
         sellerId: selectedSellerId || undefined,
         sellerName: seller ? seller.name : undefined,
         date: new Date(checkoutDate + 'T00:00:00').toISOString(),
+        pontoNovo: isPontoNovo,
         items: selectedItems.map((item) => ({
           itemId: item.itemId,
           itemName: item.itemName,
@@ -175,6 +177,7 @@ export default function Checkout() {
       setSelectedResponsibleId("");
       setSelectedSellerId("");
       setSelectedItems([]);
+      setIsPontoNovo(false);
     } catch (error: any) {
       console.error('Erro ao processar checkout:', error);
     }
@@ -240,6 +243,20 @@ export default function Checkout() {
                 value={checkoutDate}
                 onChange={(e) => setCheckoutDate(e.target.value)}
               />
+            </div>
+            
+            {/* Checkbox Ponto Novo */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="pontoNovo"
+                checked={isPontoNovo}
+                onChange={(e) => setIsPontoNovo(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="pontoNovo" className="text-sm font-medium">
+                Saída para Ponto Novo
+              </Label>
             </div>
             
             {/* Itens selecionados */}

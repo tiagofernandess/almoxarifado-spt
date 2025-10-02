@@ -132,7 +132,7 @@ export default function Reports() {
   };
 
   const handleExportMovementsPDF = () => {
-    generateMovementsReportPDF(filteredMovements, {
+    generateMovementsReportPDF(filteredMovements, items, {
       type: selectedMovementType,
       responsible: selectedResponsible,
       dateRange: dateRange
