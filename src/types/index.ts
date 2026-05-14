@@ -1,0 +1,70 @@
+
+export type ItemCategory = 'Máquinas VX' | 'Máquinas Digital' | 'Notebook/PC' | 'Suprimentos' | 'Material de Escritório' | 'Bancadas' | 'Chips';
+
+export interface Item {
+  id: string;
+  code: string;
+  name: string;
+  category: ItemCategory;
+  totalQuantity: number;
+  availableQuantity: number;
+  inUseQuantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Seller {
+  id: string;
+  name: string;
+  whatsapp: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Responsible {
+  id: string;
+  name: string;
+  whatsapp: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ItemMovement {
+  id: string;
+  type: 'checkout' | 'return'; // checkout = saída, return = devolução
+  responsibleName: string;
+  sellerId?: string;
+  sellerName?: string;
+  date: string;
+  pontoNovo?: boolean; // Indica se a saída é para um ponto novo (deprecated, usar movimentoType)
+  movimentoType?: 'ponto_novo' | 'troca' | null; // Tipo de movimentação: ponto novo ou troca
+  pontoNovoInfo?: string; // Informações sobre o ponto novo
+  trocaInfo?: string; // Informações sobre para quem foi a troca
+  items: {
+    itemId: string;
+    itemName: string;
+    itemCode: string;
+    quantity: number;
+  }[];
+}
+
+export interface DashboardStats {
+  totalItems: number;
+  totalSellers: number;
+  totalCheckouts: number;
+  totalReturns: number;
+  stockByCategory: Record<ItemCategory, number>;
+}
+
+export interface LabelTemplate {
+  startNumber: number;
+  endNumber: number;
+  customPhrase: string;
+}
+
+export interface User {
+  username: string;
+  password: string;
+}
